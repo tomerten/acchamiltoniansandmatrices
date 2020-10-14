@@ -1,5 +1,17 @@
 # Ref: Wolski Lectures on Linear Dynamics
-from sympy import Derivative, Rational, S, Symbol, series, sqrt, symbols
+from sympy import (
+    Derivative,
+    Rational,
+    S,
+    Symbol,
+    besselj,
+    cos,
+    pi,
+    series,
+    sin,
+    sqrt,
+    symbols,
+)
 
 
 def half():
@@ -271,3 +283,33 @@ def HamSQuad6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k1s):
 
 def HamSext6D(beta0, gamma0, L, x, px, y, py, delta, k1):
     pass
+
+
+def HamRFTM0106D(beta0, gamma0, L, x, px, y, py, z, delta, phi0, s, k, rho, Es, q, P0, omega):
+    """
+    omega/k = c
+    """
+    return HamDrift6D(beta0, gamma0, L, x, px, y, py, delta) + L * (
+        (q / P0) * (Es / omega) * besselj(0, k * rho) * cos(k / beta0 * s - k * z + phi0)
+    )
+
+
+def HamRFTM0106DAvg(beta0, gamma0, L, x, px, y, py, z, delta, phi0, k, rho, Es, q, P0, omega):
+    T = 2 * beta0 / pi * sin(pi / (2 * beta0))
+    alpha = pi * q / P0 * Es / omega * T
+    return HamDrift6D(beta0, gamma0, L, x, px, y, py, delta) - L * (
+        alpha / pi * besselj(0, k * rho) * cos(phi0 - k * z)
+    )
+
+
+def HamRFTM0106DAvgParaxialSecondOrder(
+    beta0, gamma0, L, x, px, y, py, z, delta, phi0, k, rho, Es, q, P0, omega
+):
+    T = 2 * beta0 / pi * sin(pi / (2 * beta0))
+    alpha = pi * q / P0 * Es / omega * T
+    return HamDrift6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta) + L * (
+        alpha / (4 * pi) * cos(phi0) * k ** 2 * (x ** 2 + y ** 2)
+        - alpha / pi * sin(phi0) * k * z
+        + alpha / (4 * pi) * cos(phi0) * k ** 2 * z ** 2
+    )
+
