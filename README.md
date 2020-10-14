@@ -1,7 +1,7 @@
 acchamiltoniansandmatrices
 ==========================
 
-Collection of Accelerator Physics Hamiltonians and Matrices
+Collection of commonly used Accelerator Physics Hamiltonians and Matrices
 
 ----
 This package has been created with `Cookiecutter` together with `@tomerten`_'s

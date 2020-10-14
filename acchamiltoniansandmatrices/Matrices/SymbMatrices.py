@@ -215,3 +215,64 @@ def RsymbDipoleFringe(K1):
             [0, 0, 0, 0, 0, 1],
         ]
     )
+
+
+def RsymbDipoleComb(beta0, gamma0, L, k0, k1):
+    """
+    k0 = q/P0*b1
+    k1=q/P0*b2/r0
+    """
+    ox = sqrt(k0 ** 2 + k1)
+    oy = sqrt(k1)
+    cx = cos(ox * L)
+    sx = sin(ox * L)
+    chy = cosh(oy * L)
+    shy = sinh(oy * L)
+    kob = k0 / beta0
+    return Matrix(
+        [
+            [cx, sx / ox, 0, 0, 0, kob * (1 - cx) / ox ** 2],
+            [-ox * sx, cx, 0, 0, 0, kob * sx / ox],
+            [0, 0, chy, shy / oy, 0, 0],
+            [0, 0, oy * shy, chy, 0, 0],
+            [
+                -kob * sx / ox,
+                -kob * (1 - cx) / ox ** 2,
+                0,
+                0,
+                1,
+                L / (beta0 * gamma0) ** 2 - kob ** 2 * (ox * L - sx) / ox ** 3,
+            ],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
+
+
+# thin lens
+def RsymbQuad6dThin(k1, L):
+    f = 1 / (k1 * L)
+    return Matrix(
+        [
+            [1, 0, 0, 0, 0, 0],
+            [-1 / f, 1, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1 / f, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
+
+
+def RsymbFODO(beta0, gamma0, L, k1):
+    f = 1 / (k1 * L)
+    return Matrix(
+        [
+            [1 - half() * L ** 2 / f ** 2, L / f * (L + 2 * f), 0, 0, 0, 0],
+            [L / (4 * f ** 3) * (L - 2 * f), 1 - half() * L ** 2 / f ** 2, 0, 0, 0, 0],
+            [0, 0, 1 - half() * L ** 2 / f ** 2, -L / f * (L - 2 * f), 0, 0],
+            [0, 0, -L / (4 * f ** 3) * (L + 2 * f), 1 - half() * L ** 2 / f ** 2, 0, 0],
+            [0, 0, 0, 0, 1, 2 * L / (beta0 * gamma0) ** 2],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
+

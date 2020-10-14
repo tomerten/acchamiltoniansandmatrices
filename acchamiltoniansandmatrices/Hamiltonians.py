@@ -360,3 +360,6 @@ def HamCombBend6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k0, 
         (k0 - h) * x ** 2 - half() * k1 * y ** 2 - h / beta0 * x * delta
     )
 
+
+# thin lens
+
