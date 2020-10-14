@@ -36,7 +36,42 @@ def RsymbDrift6D(beta0, gamma0, L):
 
 
 def RsymbDrift4D(beta0, gamma0, L):
+    """
+    4D R matrix for drift.
+
+    Arguments:
+    ----------
+    beta0   : float | sympy symbol
+        Relativistic beta
+    gamma0  : float | sympy symbol
+        Relativistic gamma
+    L       : float | sympy symbol
+        Length of the drift.
+    """
     RsymbDrift6D(beta0, gamma0, L)[0:4, 0:4]
+
+
+def RsymbDipole(beta0, gamma0, L, k0):
+    ol = k0 * L
+    c = cos(ol)
+    s = sin(ol)
+    return Matrix(
+        [
+            [c, s / k0, 0, 0, 0, (1 - c) / (k0 * beta0)],
+            [-k0 * s, c, 0, 0, 0, s / beta0],
+            [0, 0, 1, L, 0, 0],
+            [0, 0, 0, 1, 0, 0],
+            [
+                -s / beta0,
+                -(1 - c) / (k0 * beta0),
+                0,
+                0,
+                1,
+                L / (beta0 * gamma0) ** 2 - (k0 * L - s) / (k0 * beta0 ** 2),
+            ],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
 
 
 def RsymbQuad6D(beta0, gamma0, L, k1):
@@ -76,7 +111,7 @@ def RsymbSQuad6D(beta0, gamma0, L, k1s):
     sm = s - sh
     return Matrix(
         [
-            [half() * cp, half() / omega * sp, half() * cm, half() / eomega * sm, 0, 0],
+            [half() * cp, half() / omega * sp, half() * cm, half() / omega * sm, 0, 0],
             [-half() * omega * sm, half() * cp, -half() * omega * sp, half() * cm, 0, 0],
             [half() * cm, half() / omega * sm, half() * cp, half() / omega * sp, 0, 0],
             [-half() * omega * sp, half() * cm, -omega * half() * sm, half() * cp, 0, 0],

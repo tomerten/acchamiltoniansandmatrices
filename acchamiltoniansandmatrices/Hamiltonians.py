@@ -60,7 +60,7 @@ def HamDrift4D(beta0, gamma0, L, x, px, y, py):
 
 
 def HamDrift6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta):
-    return half() * px ** 2 + half() * py ** 2 + half() * (delta / (beta0 * gamma0)) ** 2
+    return L * (half() * px ** 2 + half() * py ** 2 + half() * (delta / (beta0 * gamma0)) ** 2)
 
 
 def HamDipole6D(beta0, gamma0, L, x, px, y, py, delta, h, k0):
@@ -125,6 +125,17 @@ def HamDipole4D(beta0, gamma0, L, x, px, y, py, h, k0):
         Normalised dipole field strength (k0 = q B0 / P0 )
     """
     return HamDipole6D(beta0, gamma0, L, x, px, y, py, 0, h, k0)
+
+
+def HamDipole6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, h, k0):
+    return L * (
+        half() * px ** 2
+        + half() * py ** 2
+        + (k0 - h) * x
+        + half() * k0 * h * x ** 2
+        - h / beta0 * x * delta
+        + half() * (delta / beta0 * gamma0) ** 2
+    )
 
 
 def HamQuad6D(beta0, gamma0, L, x, px, y, py, delta, k1):
