@@ -161,3 +161,20 @@ def RMRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
             [alpha * sin(psip) / psip * sin(phi0)],
         ]
     )
+
+
+def RSolenoid(beta0, gamma0, L, ks):
+    ol = ks * L
+    c = cos(ol) ** 2
+    s = sin(2 * ol)
+    s2 = sin(ol) ** 2
+    return Matrix(
+        [
+            [c, half() * s / ks, half() * s, s2 / ks, 0, 0],
+            [-half() * ks * s, c, -ks * s2, half() * s, 0, 0],
+            [-half() * s, -s2 / ks, c, half() * s / ks, 0, 0],
+            [ks * s2, -half() * s, -half() * ks * s, c, 0, 0],
+            [0, 0, 0, 0, 1, L / (beta0 * gamma0) ** 2],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )

@@ -313,3 +313,27 @@ def HamRFTM0106DAvgParaxialSecondOrder(
         + alpha / (4 * pi) * cos(phi0) * k ** 2 * z ** 2
     )
 
+
+def HamSolenoid6D(beta0, gamma0, L, x, px, y, py, delta, ks):
+    """
+    ks = 1/2 * q/P0*B0
+    """
+    return L * (
+        (delta / beta0)
+        - sqrt(
+            (1 / beta0 + delta) ** 2
+            - (px + ks * y) ** 2
+            - (py - ks * x) ** 2
+            - (1 / (beta0 * gamma0)) ** 2
+        )
+    )
+
+
+def HamSolenoid6DparaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, ks):
+    return HamDrift6DParaxialSecondOrder(beta0, gamma0, L, x, ps, y, py, delta) + L * (
+        half() * ks ** 2 * x ** 2
+        + half() * ks ** 2 * y ** 2
+        - half() * ks * x * py
+        + half() * ks * px * y
+    )
+
