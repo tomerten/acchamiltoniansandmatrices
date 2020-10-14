@@ -219,6 +219,18 @@ def HamQuad6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k1):
     )
 
 
+def HamQuad6DParaxialSecondOrderChroma(beta0, gamma0, L, x, px, y, py, delta, k1):
+    D = sqrt(1 + 2 * delta / beta0 + delta ** 2)
+    return L * (
+        delta / beta0
+        - D
+        + half() * px ** 2 / D
+        + half() * py ** 2 / D
+        + half() * k1 * x ** 2
+        - half() * k1 * y ** 2
+    )
+
+
 def HamSQuad6D(beta0, gamma0, L, x, px, y, py, delta, k1s):
     """
     6D thick skew quadruple Hamiltonian.
@@ -330,10 +342,21 @@ def HamSolenoid6D(beta0, gamma0, L, x, px, y, py, delta, ks):
 
 
 def HamSolenoid6DparaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, ks):
-    return HamDrift6DParaxialSecondOrder(beta0, gamma0, L, x, ps, y, py, delta) + L * (
+    return HamDrift6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta) + L * (
         half() * ks ** 2 * x ** 2
         + half() * ks ** 2 * y ** 2
         - half() * ks * x * py
         + half() * ks * px * y
+    )
+
+
+# combined function magnets
+def HamCombBend6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k0, k1, h):
+    """
+    k0 = q/P0*b1
+    k! = q/P0 * b2/r0
+    """
+    return HamDrift6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta) + L * (
+        (k0 - h) * x ** 2 - half() * k1 * y ** 2 - h / beta0 * x * delta
     )
 

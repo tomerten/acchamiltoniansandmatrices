@@ -98,6 +98,27 @@ def RsymbQuad4D(beta0, gamma0, L, k1):
     return RsymbQuad6D(beta0, gamma0, L, k1)[0:4, 0:4]
 
 
+def RsymbQuad6DChroma(beta0, gamma0, L, k1, delta):
+    D = sqrt(1 + 2 * delta / beta0 + delta ** 2)
+    o = sqrt(k1 / D)
+    ol = o * L
+    od = o * D
+    c = cos(ol)
+    s = sin(ol)
+    ch = cosh(ol)
+    sh = sinh(ol)
+    return Matrix(
+        [
+            [c, s / od, 0, 0, 0, 0],
+            [-od * s, c, 0, 0, 0, 0],
+            [0, 0, ch, sh / od, 0, 0],
+            [0, 0, od * sh, ch, 0, 0],
+            [0, 0, 0, 0, 1, L / (beta0 * gamma0) ** 2],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
+
+
 def RsymbSQuad6D(beta0, gamma0, L, k1s):
     omega = sqrt(k1s)
     omegaL = omega * L
@@ -121,7 +142,7 @@ def RsymbSQuad6D(beta0, gamma0, L, k1s):
     )
 
 
-def RRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
+def RsymbRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
     T = 2 * beta0 / pi * sin(pi / (2 * beta0))
     alpha = pi * q / P0 * Es / omega * T
     psit = sqrt(half() * pi * alpha * cos(phi0))
@@ -142,7 +163,7 @@ def RRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
     )
 
 
-def RMRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
+def RMsymbRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
     T = 2 * beta0 / pi * sin(pi / (2 * beta0))
     alpha = pi * q / P0 * Es / omega * T
     psit = sqrt(half() * pi * alpha * cos(phi0))
@@ -163,7 +184,7 @@ def RMRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
     )
 
 
-def RSolenoid(beta0, gamma0, L, ks):
+def RsymbSolenoid(beta0, gamma0, L, ks):
     ol = ks * L
     c = cos(ol) ** 2
     s = sin(2 * ol)
@@ -175,6 +196,22 @@ def RSolenoid(beta0, gamma0, L, ks):
             [-half() * s, -s2 / ks, c, half() * s / ks, 0, 0],
             [ks * s2, -half() * s, -half() * ks * s, c, 0, 0],
             [0, 0, 0, 0, 1, L / (beta0 * gamma0) ** 2],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
+
+
+def RsymbDipoleFringe(K1):
+    """
+    K1 = -q/P0*B0*tan(psi)
+    """
+    return Matrix(
+        [
+            [1, 0, 0, 0, 0, 0],
+            [-K1, 1, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0],
+            [0, 0, K1, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 1],
         ]
     )
