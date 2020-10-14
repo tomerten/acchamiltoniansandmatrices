@@ -197,6 +197,16 @@ def HamQuad4D(beta0, gamma0, L, x, px, y, py, k1):
     return HamQuad6D(beta0, gamma0, L, x, px, y, py, 0, k1)
 
 
+def HamQuad6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k1):
+    return L * (
+        half() * px ** 2
+        + half() * py ** 2
+        + half() * k1 * x ** 2
+        - half() * k1 * y ** 2
+        + half() * (delta / (beta0 * gamma0)) ** 2
+    )
+
+
 def HamSQuad6D(beta0, gamma0, L, x, px, y, py, delta, k1s):
     """
     6D thick skew quadruple Hamiltonian.
