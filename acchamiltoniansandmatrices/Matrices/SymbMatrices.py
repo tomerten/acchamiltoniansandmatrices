@@ -1,4 +1,4 @@
-from sympy import Matrix, Rational, cos, cosh, sin, sinh, sqrt
+from sympy import Matrix, Rational, cos, cosh, pi, sin, sinh, sqrt, tan
 
 
 def half():
@@ -117,5 +117,47 @@ def RsymbSQuad6D(beta0, gamma0, L, k1s):
             [-half() * omega * sp, half() * cm, -omega * half() * sm, half() * cp, 0, 0],
             [0, 0, 0, 0, 1, L / (beta0, gamma0) ** 2],
             [0, 0, 0, 0, 0, 1],
+        ]
+    )
+
+
+def RRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
+    T = 2 * beta0 / pi * sin(pi / (2 * beta0))
+    alpha = pi * q / P0 * Es / omega * T
+    psit = sqrt(half() * pi * alpha * cos(phi0))
+    psip = sqrt(pi * alpha * cos(phi0)) / (gamma0 * beta0)
+    c = cos(psit)
+    s = sin(psit)
+    cp = cos(psip)
+    sp = sin(psip)
+    return Matrix(
+        [
+            [c, L / psit * s, 0, 0, 0, 0],
+            [-psit / L * s, c, 0, 0, 0, 0],
+            [0, 0, c, L / psit * s, 0, 0],
+            [0, 0, -psit / L * s, c, 0, 0],
+            [0, 0, 0, 0, cp, (1 / (beta0 * gamma0)) ** 2 * L / psip * sp],
+            [0, 0, 0, 0, -(beta0 ** 2) * gamma0 ** 2 * psip / L * sp, cp],
+        ]
+    )
+
+
+def RMRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
+    T = 2 * beta0 / pi * sin(pi / (2 * beta0))
+    alpha = pi * q / P0 * Es / omega * T
+    psit = sqrt(half() * pi * alpha * cos(phi0))
+    psip = sqrt(pi * alpha * cos(phi0)) / (gamma0 * beta0)
+    c = cos(psit)
+    s = sin(psit)
+    cp = cos(psip)
+    sp = sin(psip)
+    return Matrix(
+        [
+            [0],
+            [0],
+            [0],
+            [0],
+            [2 / pi * L * sin((psip / 2)) * tan(phi0)],
+            [alpha * sin(psip) / psip * sin(phi0)],
         ]
     )
