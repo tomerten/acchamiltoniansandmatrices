@@ -249,7 +249,7 @@ def RsymbDipoleComb(beta0, gamma0, L, k0, k1):
 
 
 # thin lens
-def RsymbQuad6dThin(k1, L):
+def RsymbQuad6dThin(L, k1):
     f = 1 / (k1 * L)
     return Matrix(
         [
