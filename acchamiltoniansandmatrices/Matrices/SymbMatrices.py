@@ -142,7 +142,7 @@ def RsymbSQuad6D(beta0, gamma0, L, k1s):
     )
 
 
-def RsymbRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
+def RsymbRFTM0106D(beta0, gamma0, L, phi0, q, P0, Es, omega):
     T = 2 * beta0 / pi * sin(pi / (2 * beta0))
     alpha = pi * q / P0 * Es / omega * T
     psit = sqrt(half() * pi * alpha * cos(phi0))
@@ -163,7 +163,7 @@ def RsymbRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
     )
 
 
-def RMsymbRFTM010(beta0, gamma0, L, phi0, q, P0, Es, omega):
+def RMsymbRFTM0106D(beta0, gamma0, L, phi0, q, P0, Es, omega):
     T = 2 * beta0 / pi * sin(pi / (2 * beta0))
     alpha = pi * q / P0 * Es / omega * T
     psit = sqrt(half() * pi * alpha * cos(phi0))
