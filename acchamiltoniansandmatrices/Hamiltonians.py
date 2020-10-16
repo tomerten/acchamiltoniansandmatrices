@@ -361,5 +361,5 @@ def HamCombBend6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k0, 
     )
 
 
-# thin lens
-
+def HamSext6D(beta0, gamma0, L,x,px,y,py,delta,k2):
+    return HamDrift6D(beta0,gamma0,L,x,px,y,py,delta) + L * (1/6*k2*(x**3-3*x*y**2))
