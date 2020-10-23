@@ -136,7 +136,7 @@ def RsymbSQuad6D(beta0, gamma0, L, k1s):
             [-half() * omega * sm, half() * cp, -half() * omega * sp, half() * cm, 0, 0],
             [half() * cm, half() / omega * sm, half() * cp, half() / omega * sp, 0, 0],
             [-half() * omega * sp, half() * cm, -omega * half() * sm, half() * cp, 0, 0],
-            [0, 0, 0, 0, 1, L / (beta0, gamma0) ** 2],
+            [0, 0, 0, 0, 1, L / (beta0 * gamma0) ** 2],
             [0, 0, 0, 0, 0, 1],
         ]
     )
@@ -166,12 +166,7 @@ def RsymbRFTM0106D(beta0, gamma0, L, phi0, q, P0, Es, omega):
 def RMsymbRFTM0106D(beta0, gamma0, L, phi0, q, P0, Es, omega):
     T = 2 * beta0 / pi * sin(pi / (2 * beta0))
     alpha = pi * q / P0 * Es / omega * T
-    psit = sqrt(half() * pi * alpha * cos(phi0))
     psip = sqrt(pi * alpha * cos(phi0)) / (gamma0 * beta0)
-    c = cos(psit)
-    s = sin(psit)
-    cp = cos(psip)
-    sp = sin(psip)
     return Matrix(
         [
             [0],
@@ -249,30 +244,30 @@ def RsymbDipoleComb(beta0, gamma0, L, k0, k1):
 
 
 # thin lens
-def RsymbQuad6dThin(L, k1):
+def RsymbQuad6DThin(L, k1):
     f = 1 / (k1 * L)
     return Matrix(
         [
             [1, 0, 0, 0, 0, 0],
             [-1 / f, 1, 0, 0, 0, 0],
             [0, 0, 1, 0, 0, 0],
-            [0, 0, 0, 1 / f, 1, 0, 0],
+            [0, 0, 0, 1 / f, 1, 0],
             [0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 1],
         ]
     )
 
 
-def RsymbFODO(beta0, gamma0, L, k1):
-    f = 1 / (k1 * L)
+def RsymbFODO(beta0, gamma0, L, f):
+    fq = f
+    fd = f
     return Matrix(
         [
-            [1 - half() * L ** 2 / f ** 2, L / f * (L + 2 * f), 0, 0, 0, 0],
-            [L / (4 * f ** 3) * (L - 2 * f), 1 - half() * L ** 2 / f ** 2, 0, 0, 0, 0],
-            [0, 0, 1 - half() * L ** 2 / f ** 2, -L / f * (L - 2 * f), 0, 0],
-            [0, 0, -L / (4 * f ** 3) * (L + 2 * f), 1 - half() * L ** 2 / f ** 2, 0, 0],
+            [1 - half() * L ** 2 / fq ** 2, L / fq * (L + 2 * fq), 0, 0, 0, 0],
+            [L / (4 * fq ** 3) * (L - 2 * fq), 1 - half() * L ** 2 / fq ** 2, 0, 0, 0, 0],
+            [0, 0, 1 - half() * L ** 2 / fd ** 2, -L / fd * (L - 2 * fd), 0, 0],
+            [0, 0, -L / (4 * fd ** 3) * (L + 2 * fd), 1 - half() * L ** 2 / fd ** 2, 0, 0],
             [0, 0, 0, 0, 1, 2 * L / (beta0 * gamma0) ** 2],
             [0, 0, 0, 0, 0, 1],
         ]
     )
-

@@ -29,16 +29,16 @@ def HamDrift6D(beta0, gamma0, L, x, px, y, py, delta):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      :  float | sympy symbol  
+        Horizontal momentum
+    y      :  float | sympy symbol
         Vertical coordinate
-    py      :  float | sympy symbol 
+    py      :  float | sympy symbol
         Vertical momentum
-    delta   :  float | sympy symbol 
+    delta   :  float | sympy symbol
         Longitudinal momentum deviation
     """
     return L * (
@@ -58,14 +58,14 @@ def HamDrift4D(beta0, gamma0, L, x, px, y, py):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      :  float | sympy symbol  
+        Horizontal momentum
+    y      :  float | sympy symbol
         Vertical coordinate
-    py      :  float | sympy symbol 
+    py      :  float | sympy symbol
         Vertical momentum
     """
     return HamDrift6D(beta0, gamma0, L, x, px, y, py, 0)
@@ -86,16 +86,16 @@ def HamDipole6D(beta0, gamma0, L, x, px, y, py, delta, h, k0):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      : float | sympy symbol  
+        Horizontal momentum
+    y      : float | sympy symbol
         Vertical coordinate
-    py     : float | sympy symbol 
+    py     : float | sympy symbol
         Vertical momentum
-    delta  : float | sympy symbol 
+    delta  : float | sympy symbol
         Longitudinal momentum deviation
     h      : float | sympy symbol
         Local curvature of the curvy linear coordinate system
@@ -122,14 +122,14 @@ def HamDipole4D(beta0, gamma0, L, x, px, y, py, h, k0):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      : float | sympy symbol  
+        Horizontal momentum
+    y      : float | sympy symbol
         Vertical coordinate
-    py     : float | sympy symbol 
+    py     : float | sympy symbol
         Vertical momentum
     h      : float | sympy symbol
         Local curvature of the curvy linear coordinate system
@@ -161,14 +161,14 @@ def HamQuad6D(beta0, gamma0, L, x, px, y, py, delta, k1):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      : float | sympy symbol  
+        Horizontal momentum
+    y      : float | sympy symbol
         Vertical coordinate
-    py     : float | sympy symbol 
+    py     : float | sympy symbol
         Vertical momentum
     delta  : float | sympy symbol
         Longitudinal momentum deviation
@@ -192,14 +192,14 @@ def HamQuad4D(beta0, gamma0, L, x, px, y, py, k1):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      : float | sympy symbol  
+        Horizontal momentum
+    y      : float | sympy symbol
         Vertical coordinate
-    py     : float | sympy symbol 
+    py     : float | sympy symbol
         Vertical momentum
     delta  : float | sympy symbol
         Longitudinal momentum deviation
@@ -242,14 +242,14 @@ def HamSQuad6D(beta0, gamma0, L, x, px, y, py, delta, k1s):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      : float | sympy symbol  
+        Horizontal momentum
+    y      : float | sympy symbol
         Vertical coordinate
-    py     : float | sympy symbol 
+    py     : float | sympy symbol
         Vertical momentum
     delta  : float | sympy symbol
         Longitudinal momentum deviation
@@ -271,14 +271,14 @@ def HamSQuad6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k1s):
     gamma0 : float | sympy symbol
         Relativistic gamma
     L      : float | sympy symbol
-        Length of the drift 
-    x      : float | sympy symbol 
+        Length of the drift
+    x      : float | sympy symbol
         Horizontal coordinate [meter]
     px     : float | sympy symbol
-        Horizontal momentum 
-    y      : float | sympy symbol  
+        Horizontal momentum
+    y      : float | sympy symbol
         Vertical coordinate
-    py     : float | sympy symbol 
+    py     : float | sympy symbol
         Vertical momentum
     delta  : float | sympy symbol
         Longitudinal momentum deviation
@@ -291,10 +291,6 @@ def HamSQuad6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k1s):
         + k1s * x * y
         + half() * (delta / (beta0 * gamma0)) ** 2
     )
-
-
-def HamSext6D(beta0, gamma0, L, x, px, y, py, delta, k1):
-    pass
 
 
 def HamRFTM0106D(beta0, gamma0, L, x, px, y, py, z, delta, phi0, s, k, rho, Es, q, P0, omega):
@@ -361,5 +357,7 @@ def HamCombBend6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k0, 
     )
 
 
-def HamSext6D(beta0, gamma0, L,x,px,y,py,delta,k2):
-    return HamDrift6D(beta0,gamma0,L,x,px,y,py,delta) + L * (1/6*k2*(x**3-3*x*y**2))
+def HamSext6D(beta0, gamma0, L, x, px, y, py, delta, k2):
+    return HamDrift6D(beta0, gamma0, L, x, px, y, py, delta) + L * (
+        1 / 6 * k2 * (x ** 3 - 3 * x * y ** 2)
+    )

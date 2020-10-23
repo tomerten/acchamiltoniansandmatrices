@@ -23,7 +23,7 @@ from .SymbMatrices import (
     RsymbQuad4D,
     RsymbQuad6D,
     RsymbQuad6DChroma,
-    RsymbQuad6dThin,
+    RsymbQuad6DThin,
     RsymbRFTM0106D,
     RsymbSolenoid,
     RsymbSQuad6D,
@@ -42,7 +42,7 @@ s = symbols("s")
 phi0, q, P0, Es, omega = symbols("phi_0 q, P_0 E_s omega")
 
 # Lattice element related symbols
-L, k0, k1, k1s, ks, h = symbols("L k_0 k_1 ks_1 k_s h")
+L, k0, k1, k1s, ks, h, f = symbols("L k_0 k_1 ks_1 k_s h f")
 
 # Fringe fields
 K1 = symbols("K_1")
@@ -69,7 +69,7 @@ RnpQuad6D = lambdify(quadArgs, RsymbQuad6D(*quadArgs), "numpy")
 RnpQuad4D = lambdify(quadArgs, RsymbQuad4D(*quadArgs), "numpy")
 RnpQuad6DChroma = lambdify(quadArgs + (delta,), RsymbQuad6DChroma(*quadArgs, delta), "numpy")
 RnpSQuad6D = lambdify(relArgs + (L, k1s), RsymbSQuad6D(*relArgs, L, k1s), "numpy")
-RnpQuad6DThin = lambdify((L, k1), RsymbQuad6dThin(L, k1), "numpy")
+RnpQuad6DThin = lambdify((L, k1), RsymbQuad6DThin(L, k1), "numpy")
 
 
 # RF MATRICES
@@ -82,5 +82,5 @@ SolenoidArgs = relArgs + (L, ks)
 RnpSolenoid = lambdify(SolenoidArgs, RsymbSolenoid(*SolenoidArgs), "numpy")
 
 # FODO MATRICES
-fodoArgs = relArgs + (L, k1)
+fodoArgs = relArgs + (L, f)
 RnpFODO = lambdify(fodoArgs, RsymbFODO(*fodoArgs), "numpy")
