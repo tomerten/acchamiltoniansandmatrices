@@ -1,14 +1,7 @@
 numpy
 pandas
-h5py
-fastjsonschema
+sympy
 click
-tables
-xlsxwriter
-xlrd
-tqdm
-p_tqdm
-pymongo
 termcolor
-requests
 pre-commit
+matplotlib

@@ -1,28 +1,20 @@
-import os
+from pathlib import Path
+from typing import Dict
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-with open("accham/__about__.py") as file:
-    about = {}
-    for line in file:
-        k, v = line.split("=")
-        about[k] = v
-
-with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
-
-
-def read(fname):
-    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
-        readinput = f.read()
-    return readinput
+base_path = Path(__file__).resolve().parent
+about: Dict[str, str] = {}
+exec((base_path / "acchamiltoniansandmatrices/__about__.py").read_text(), about)
+readme = (base_path / "README.md").read_text()
+requirements = (base_path / "requirements.txt").read_text()
 
 
 setup(
-    ame=about["__title__"],
-    version=about["__version__"],
+    name=about["__title__"],
+    version="1.0.1a0",
     description=about["__description__"],
-    long_description=read('README.md'),
+    long_description=readme,
     long_description_content_type="text/markdown",
     url=about["__url__"],
     author=about["__author__"],
@@ -30,9 +22,7 @@ setup(
     packages=find_packages(),
     install_requires=requirements,
     entry_points={
-        'console_scripts': [
-            'acchamiltoniansandmatrices=acchamiltoniansandmatrices.cli:main'
-        ]
+        "console_scripts": ["acchamiltoniansandmatrices=acchamiltoniansandmatrices.cli:main"]
     },
     classifiers=[
         "Development Status :: 1 - Alpha",

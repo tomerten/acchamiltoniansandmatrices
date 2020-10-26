@@ -74,7 +74,6 @@ def GenerateNDimCoordinateGrid(N, NPOINTS, pmin=1e-6, pmax=1e-4, man_ranges=None
     if man_ranges is not None:
         for k, v in man_ranges.items():
             rangelist[int(k)] = v
-    print(rangelist)
     grid = np.meshgrid(*rangelist)
     coordinate_grid = np.array([*grid])
     print(
