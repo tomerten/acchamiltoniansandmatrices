@@ -22,7 +22,9 @@ setup(
     packages=find_packages(),
     install_requires=requirements,
     entry_points={
-        "console_scripts": ["acchamiltoniansandmatrices=acchamiltoniansandmatrices.cli:main"]
+        "console_scripts": [
+            "acchamiltoniansandmatrices=acchamiltoniansandmatrices.cli:main"
+        ]
     },
     classifiers=[
         "Development Status :: 1 - Alpha",
