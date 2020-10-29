@@ -161,22 +161,21 @@ class PoissonBracket(Expr):
 
         return self.expr
 
-     def _expand_pow(self, A, B, sign):
+    def _expand_pow(self, A, B, sign):
         exp = A.exp
         if not exp.is_integer or not exp.is_constant() or abs(exp) <= 1:
             # nothing to do
             return self
         base = A.base
         if exp.is_negative:
-            base = A.base**-1
+            base = A.base ** -1
             exp = -exp
         comm = PoissonBracket(base, B).expand(commutator=True)
 
-        result = base**(exp - 1) * comm
+        result = base ** (exp - 1) * comm
         for i in range(1, exp):
-            result += base**(exp - 1 - i) * comm * base**i
-        return sign*result.expand()
-    
+            result += base ** (exp - 1 - i) * comm * base ** i
+        return sign * result.expand()
 
     def _eval_expand_commutator(self, **hints):
         A = self.A  # self.args[0]
@@ -242,8 +241,65 @@ class PoissonBracket(Expr):
 
         return self
 
-     def _latex(self, printer, *args):
-        return "\\lbrace %s,%s\\rbrace" %tuple([
-            printer._print(arg.func, *args) if arg.is_Function  and not (isinstance(arg,UndefinedFunction))
-            else  printer._print(arg, *args) 
-            for arg in self.args[:2] ])
+    def _latex(self, printer, *args):
+        news = []
+        for arg in self.args[:2]:
+            if isinstance(arg, Add):
+                news.append(
+                    " + ".join(
+                        [
+                            printer._print(a.func, *args)
+                            if a.is_Function
+                            else printer._print(a, *args)
+                            for a in arg.args
+                        ]
+                    )
+                )
+
+            elif isinstance(arg, PoissonBracket):
+                news.append(
+                    "\\lbrace %s,%s\\rbrace"
+                    % tuple(
+                        [
+                            printer._print(a.func, *args)
+                            if a.is_Function and not isinstance(a, UndefinedFunction)
+                            else printer._print(a, *args)
+                            for a in arg.args[:2]
+                        ]
+                    )
+                )
+
+            elif isinstance(arg, Mul):
+                news.append(" * ".join([printer._print(arg, *args) for arg in self.args[:2]]))
+
+            elif isinstance(arg, Pow):
+                if isinstance(arg.args[0], UndefinedFunction):
+                    news.append("{}^{}".format([printer._print(a) for a in arg.args]))
+                elif isinstance(arg.args[0], Function):
+                    news.append(
+                        "{}^{}".format(
+                            printer._print(arg.args[0].func, *args),
+                            printer._print(arg.args[1], *args),
+                        )
+                    )
+                else:
+                    news.append(printer._print(arg, *args))
+
+            elif isinstance(arg, Function) and not (isinstance(arg, UndefinedFunction)):
+                news.append(printer._print(arg.func, *args))
+
+            else:  # isinstance(arg, Function) and isinstance(arg,UndefinedFunction):
+                news.append(printer._print(arg, *args))
+
+        print(news)
+        return "\\lbrace %s,%s\\rbrace" % tuple(news)
+
+    # legacy - kept for demo
+    # return "\\lbrace %s,%s\\rbrace" % tuple(
+    #     [
+    #         printer._print(arg.func, *args)
+    #         if arg.is_Function and not (isinstance(arg, UndefinedFunction))
+    #         else printer._print(arg, *args)
+    #         for arg in self.args[:2]
+    #     ]
+    # )

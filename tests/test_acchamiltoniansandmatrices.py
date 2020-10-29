@@ -1,11 +1,123 @@
-from acchamiltoniansandmatrices.acchamiltoniansandmatrices import fib
+from sympy import Derivative, Function, symbols
+
+from acchamiltoniansandmatrices.LieMaps.Poisson import PoissonBracket
+
+A = Function("A", commutative=False)
+B = Function("B", commutative=False)
+C = Function("C", commutative=False)
+D = Function("D", commutative=False)
+
+x, px, y, py = symbols("x px y py")
 
 
-def test_fib() -> None:
-    assert fib(0) == 0
-    assert fib(1) == 1
-    assert fib(2) == 1
-    assert fib(3) == 2
-    assert fib(4) == 3
-    assert fib(5) == 5
-    assert fib(10) == 55
+def test_single_pb_undef_Function():
+    test1 = PoissonBracket(A, B)
+    assert test1.free_symbols == set()
+
+
+def test_single_pb_explicit_expr_no_indep():
+    test2 = PoissonBracket(x ** 2, x + px)
+    assert test2.doit() == test2
+    assert test2.free_symbols == {x, px}
+
+
+def test_single_pb_Function_with_var_no_indep():
+    test3 = PoissonBracket(A(x, px), B(y, py))
+    assert test3.doit() == test3
+    assert test3.free_symbols == {x, px, py, y}
+
+
+def test_single_pb_explicit_expr_indep():
+    test4 = PoissonBracket(x ** 2, x + px, coords=[x], mom=[px])
+    assert test4.free_symbols == {x, px}
+    assert test4.doit() == 2 * x
+
+
+def test_single_pb_Function_with_var_indep():
+    test5 = PoissonBracket(A(x, px), B(x, y, py), coords=[x, y], mom=[px, py])
+    assert test5.free_symbols == {x, px, py, y}
+    assert test5.doit() == -Derivative(A(x, px), px) * Derivative(B(x, y, py), x)
+
+
+def test_double_pb_2undef_Function_no_var_undef_Function_no_var_no_indep():
+    test1 = PoissonBracket(A, B)
+    test6 = PoissonBracket(test1, C)
+    assert test6.free_symbols == set()
+    assert test6.doit() == test6
+
+
+def test_double_pb_2explicit_no_var_undef_Function_no_var_no_indep():
+    test2 = PoissonBracket(x ** 2, x + px)
+    test7 = PoissonBracket(test2, C)
+    assert test7.free_symbols == {x, px}
+    assert test7.doit() == test7
+
+
+def test_double_pb_Function_with_var_undef_Function_no_var_no_indep():
+    test3 = PoissonBracket(A(x, px), B(y, py))
+    test8 = PoissonBracket(test3, C)
+    assert test8.doit() == test8
+    assert test8.free_symbols == {x, px, py, y}
+
+
+def test_double_pb_explicit_expr_indep_undef_Function_no_var_no_indep():
+    test4 = PoissonBracket(x ** 2, x + px, coords=[x], mom=[px])
+    test9 = PoissonBracket(test4, C)
+    assert test9.free_symbols == {x, px}
+    assert test9.doit() == test9
+
+
+def test_double_pb_Function_with_var_indep_undef_Function_no_var_no_indep():
+    test5 = PoissonBracket(A(x, px), B(x, y, py), coords=[x, y], mom=[px, py])
+    test10 = PoissonBracket(test5, C)
+    assert test10.free_symbols == {x, px, py, y}
+    assert test10.doit() == test10
+
+
+def test_double_pb_Function_with_var_indep_Function_with_var_no_indep():
+    test5 = PoissonBracket(A(x, px), B(x, y, py), coords=[x, y], mom=[px, py])
+    test11 = PoissonBracket(test5, C(x, px))
+    assert test11.free_symbols == {x, px, py, y}
+    assert test11.doit() == test11
+
+
+def test_double_pb_Function_with_var_indep_Function_with_var_indep():
+    test5 = PoissonBracket(A(x, px), B(x, y, py), coords=[x, y], mom=[px, py])
+    test12 = PoissonBracket(test5, C(x, px), coords=[x, y], mom=[px, py])
+    res12 = (
+        -Derivative(A(x, px), px) * Derivative(B(x, y, py), (x, 2))
+        - Derivative(A(x, px), px, x) * Derivative(B(x, y, py), x)
+    ) * Derivative(C(x, px), px) + Derivative(A(x, px), (px, 2)) * Derivative(
+        B(x, y, py), x
+    ) * Derivative(
+        C(x, px), x
+    )
+    assert test12.free_symbols == {x, px, py, y}
+    assert test12.doit() == res12
+
+
+def test_single_pb_sum_Function_with_var_Function_with_var_indep():
+    test13 = PoissonBracket(A(x, px) + B(x, y, py), C(x, px), coords=[x, y], mom=[px, py])
+    res13 = (Derivative(A(x, px), x) + Derivative(B(x, y, py), x)) * Derivative(
+        C(x, px), px
+    ) - Derivative(A(x, px), px) * Derivative(C(x, px), x)
+    assert test13.free_symbols == {x, px, py, y}
+    assert test13.doit() == res13
+
+
+def test_single_pb_Function_with_var_sum_Function_with_var_indep():
+    test14 = PoissonBracket(A(x, px), B(x, y, py) + C(x, px), coords=[x, y], mom=[px, py])
+    res14 = -Derivative(A(x, px), px) * (
+        Derivative(B(x, y, py), x) + Derivative(C(x, px), x)
+    ) + Derivative(A(x, px), x) * Derivative(C(x, px), px)
+    assert test14.free_symbols == {x, px, py, y}
+    assert test14.doit() == res14
+
+
+def test_single_pb_product_Function_with_var_Function_with_var_indep():
+    test15 = PoissonBracket(A(x, px) * B(x, y, py), C(x, px), coords=[x, y], mom=[px, py])
+    res15 = (
+        A(x, px) * Derivative(B(x, y, py), x) + Derivative(A(x, px), x) * B(x, y, py)
+    ) * Derivative(C(x, px), px) - Derivative(A(x, px), px) * B(x, y, py) * Derivative(C(x, px), x)
+    assert test15.free_symbols == {x, px, py, y}
+    assert test15.doit() == res15
