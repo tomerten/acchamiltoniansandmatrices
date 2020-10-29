@@ -121,3 +121,71 @@ def test_single_pb_product_Function_with_var_Function_with_var_indep():
     ) * Derivative(C(x, px), px) - Derivative(A(x, px), px) * B(x, y, py) * Derivative(C(x, px), x)
     assert test15.free_symbols == {x, px, py, y}
     assert test15.doit() == res15
+
+
+def test_single_pb_Function_with_var_product_Function_with_var_indep():
+    test16 = PoissonBracket(A(x, px), B(x, y, py) * C(x, px), coords=[x, y], mom=[px, py])
+    res16 = -Derivative(A(x, px), px) * (
+        B(x, y, py) * Derivative(C(x, px), x) + Derivative(B(x, y, py), x) * C(x, px)
+    ) + Derivative(A(x, px), x) * B(x, y, py) * Derivative(C(x, px), px)
+    assert test16.free_symbols == {x, px, py, y}
+    assert test16.doit() == res16
+
+
+def test_single_pb_Pow_Function_with_var_Function_with_var_indep():
+    test17 = PoissonBracket(A(x, px) ** 3, B(x, y, py), coords=[x, y], mom=[px, py])
+    res17 = (
+        -3
+        * A(x, px) ** 3
+        * Derivative(A(x, px), px)
+        * A(x, px) ** (-1)
+        * Derivative(B(x, y, py), x)
+    )
+    assert test17.free_symbols == {x, px, py, y}
+    assert test17.doit() == res17
+
+
+def test_triple_pb_3Function_with_var_indep():
+    test5 = PoissonBracket(A(x, px), B(x, y, py), coords=[x, y], mom=[px, py])
+    test12 = PoissonBracket(test5, C(x, px), coords=[x, y], mom=[px, py])
+    test18 = PoissonBracket(test12, D(x, y), coords=[x, y], mom=[px, py])
+    res18 = -(
+        (
+            -Derivative(A(x, px), px) * Derivative(B(x, y, py), py, (x, 2))
+            - Derivative(A(x, px), px, x) * Derivative(B(x, y, py), py, x)
+        )
+        * Derivative(C(x, px), px)
+        + Derivative(A(x, px), (px, 2)) * Derivative(B(x, y, py), py, x) * Derivative(C(x, px), x)
+    ) * Derivative(D(x, y), y) - (
+        (
+            -Derivative(A(x, px), px) * Derivative(B(x, y, py), (x, 2))
+            - Derivative(A(x, px), px, x) * Derivative(B(x, y, py), x)
+        )
+        * Derivative(C(x, px), (px, 2))
+        + (
+            -Derivative(A(x, px), (px, 2)) * Derivative(B(x, y, py), (x, 2))
+            - Derivative(A(x, px), (px, 2), x) * Derivative(B(x, y, py), x)
+        )
+        * Derivative(C(x, px), px)
+        + Derivative(A(x, px), (px, 2)) * Derivative(B(x, y, py), x) * Derivative(C(x, px), px, x)
+        + Derivative(A(x, px), (px, 3)) * Derivative(B(x, y, py), x) * Derivative(C(x, px), x)
+    ) * Derivative(
+        D(x, y), x
+    )
+    assert test18.free_symbols == {x, px, py, y}
+
+
+def test_doube_pb_rsum_deep():
+    test13 = PoissonBracket(A(x, px) + B(x, y, py), C(x, px), coords=[x, y], mom=[px, py])
+    test19 = PoissonBracket(test13, D(x, y), coords=[x, y], mom=[px, py])
+    res19 = -(
+        (Derivative(A(x, px), x) + Derivative(B(x, y, py), x)) * Derivative(C(x, px), (px, 2))
+        - Derivative(A(x, px), px) * Derivative(C(x, px), px, x)
+        - Derivative(A(x, px), (px, 2)) * Derivative(C(x, px), x)
+        + Derivative(A(x, px), px, x) * Derivative(C(x, px), px)
+    ) * Derivative(D(x, y), x) - Derivative(B(x, y, py), py, x) * Derivative(
+        C(x, px), px
+    ) * Derivative(
+        D(x, y), y
+    )
+    assert test19.free_symbols == {x, px, py, y}

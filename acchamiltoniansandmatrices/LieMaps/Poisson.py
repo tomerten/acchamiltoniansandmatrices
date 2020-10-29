@@ -257,17 +257,7 @@ class PoissonBracket(Expr):
                 )
 
             elif isinstance(arg, PoissonBracket):
-                news.append(
-                    "\\lbrace %s,%s\\rbrace"
-                    % tuple(
-                        [
-                            printer._print(a.func, *args)
-                            if a.is_Function and not isinstance(a, UndefinedFunction)
-                            else printer._print(a, *args)
-                            for a in arg.args[:2]
-                        ]
-                    )
-                )
+                news.append(printer.doprint(arg, *args))
 
             elif isinstance(arg, Mul):
                 news.append(" * ".join([printer._print(arg, *args) for arg in self.args[:2]]))
@@ -291,7 +281,7 @@ class PoissonBracket(Expr):
             else:  # isinstance(arg, Function) and isinstance(arg,UndefinedFunction):
                 news.append(printer._print(arg, *args))
 
-        print(news)
+        # print(news)
         return "\\lbrace %s,%s\\rbrace" % tuple(news)
 
     # legacy - kept for demo

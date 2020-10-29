@@ -1,11 +1,14 @@
+from __future__ import division, print_function
+
 from collections import Counter
 
 import sympy
-from sympy import Expr, Rational, S, factorial
+from sympy import Add, Expr, Function, Mul, Pow, Rational, S, factorial, symbols
 from sympy.core.decorators import _sympifyit, call_highest_priority
+from sympy.core.function import UndefinedFunction
 from sympy.printing.latex import print_latex
 
-from .PoissonOperator import PoissonBracket
+from .Poisson import PoissonBracket
 
 
 class LieOperator(Expr):
@@ -131,8 +134,8 @@ class LieOperator(Expr):
                 PoissonBracket(
                     _ham1.ham,
                     _ham2.ham,
-                    _ham1.indep_coords,
-                    _ham1.indep_mom,
+                    coords=_ham1.indep_coords,
+                    mom=_ham1.indep_mom,
                 ),
                 _ham1.indep_coords,
                 _ham1.indep_mom,
@@ -224,10 +227,52 @@ class LieOperator(Expr):
 
         return temp
 
-    def _latex(self, printer=None):
+    def _latex(self, printer, *args):
         # print(self._ham.__class__.__name__)
         # print(len(self.ham.args))
         # print(self.ham.args)
+        # news = []
+        # for arg in [self.ham]:
+        #    if isinstance(arg, Add):
+        #        news.append(
+        #            " + ".join(
+        #                [
+        #                    printer._print(a.func, *args)
+        #                    if a.is_Function
+        #                    else printer._print(a, *args)
+        #                    for a in arg.args
+        #                ]
+        #            )
+        #        )
+
+        #    elif isinstance(arg, PoissonBracket):
+        #        news.append(printer.doprint(arg, *args))
+
+        #    elif isinstance(arg, Mul):
+        #        news.append(" * ".join([printer._print(arg, *args) for arg in self.args[:2]]))
+
+        #    elif isinstance(arg, Pow):
+        #        if isinstance(arg.args[0], UndefinedFunction):
+        #            news.append("{}^{}".format([printer._print(a) for a in arg.args]))
+        #        elif isinstance(arg.args[0], Function):
+        #            news.append(
+        #                "{}^{}".format(
+        #                    printer._print(arg.args[0].func, *args),
+        #                    printer._print(arg.args[1], *args),
+        #                )
+        #            )
+        #        else:
+        #            news.append(printer._print(arg, *args))
+
+        #    elif isinstance(arg, Function) and not (isinstance(arg, UndefinedFunction)):
+        #        news.append(printer._print(arg.func, *args))
+
+        #    else:  # isinstance(arg, Function) and isinstance(arg,UndefinedFunction):
+        #        news.append(printer._print(arg, *args))
+
+        # return "%s" % tuple(news)
+
+        ##### prints ham with functions as ham has functions with own print method, need to overwrite
         if self._ham.__class__.__name__ == "Add":
             if len(self.ham.args) >= 2:
                 pham = (
