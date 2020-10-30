@@ -1,4 +1,4 @@
-from sympy import Derivative, Function, symbols
+from sympy import Derivative, Function, Rational, symbols
 
 from acchamiltoniansandmatrices.LieMaps.Poisson import PoissonBracket
 
@@ -8,6 +8,13 @@ C = Function("C", commutative=False)
 D = Function("D", commutative=False)
 
 x, px, y, py = symbols("x px y py")
+
+half = Rational(1, 2)
+
+
+def test_single_pb_undef_Function_number():
+    test0 = PoissonBracket(half, A)
+    assert test0 == 0
 
 
 def test_single_pb_undef_Function():

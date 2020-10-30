@@ -10,6 +10,8 @@ from sympy.printing.latex import print_latex
 
 from .Poisson import PoissonBracket
 
+# TODO: double dot notation not correct when expanding the poisson bracket has to go in the bracket
+
 
 class LieOperator(Expr):
     """
@@ -287,6 +289,8 @@ class LieOperator(Expr):
                     )
             else:
                 pham = printer.doprint(self.ham.as_expr())
+        elif isinstance(self.ham, UndefinedFunction):
+            pham = printer.doprint(self._ham)
         else:
             pham = printer.doprint(self._ham.func)
 

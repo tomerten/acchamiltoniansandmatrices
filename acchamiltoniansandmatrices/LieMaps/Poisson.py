@@ -82,6 +82,15 @@ class PoissonBracket(Expr):
             return S.Zero
         if a == b:
             return S.Zero
+        if a.is_number or b.is_number:
+            return S.Zero
+        try:
+            if a.compare(b) == 1:
+                return S.NegativeOne * cls(b, a)
+        except TypeError:
+            tmp = symbols("tmp")
+            if a(tmp).compare(b(tmp)) == 1:
+                return S.NegativeOne * cls(b, a)
 
     @property
     def A(self):
@@ -145,7 +154,8 @@ class PoissonBracket(Expr):
         """ Evaluate commutator """
         A = self.A
         B = self.B
-
+        print(self.args)
+        print(self.A == self.args[0])
         if isinstance(A, Operator) and isinstance(B, Operator):
             try:
                 comm = A._eval_commutator(B, **hints)
@@ -156,9 +166,15 @@ class PoissonBracket(Expr):
                     comm = None
             if comm is not None:
                 return comm.doit(**hints)
-        if isinstance(A, UndefinedFunction) and isinstance(B, UndefinedFunction):
+        if isinstance(A, UndefinedFunction) or isinstance(B, UndefinedFunction):
             return self
-
+        if self.args[0] == -1:
+            A = self.args[1]
+            B = self.args[2]
+            if isinstance(A, UndefinedFunction) or isinstance(B, UndefinedFunction):
+                return self
+            else:
+                return -self.expr
         return self.expr
 
     def _expand_pow(self, A, B, sign):
