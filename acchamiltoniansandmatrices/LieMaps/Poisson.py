@@ -1,135 +1,160 @@
-"""The Poisson bracket = {A,B} = Sum_i (Der(A,q_i)*Der(B,p_i) - Der(A,p_i)*Der(B,q_i) """
-
 from __future__ import division, print_function
 
-from sympy import Add, Expr, Function, Mul, Pow, S, symbols
+from sympy import (
+    Add,
+    Derivative,
+    Expr,
+    Function,
+    Mul,
+    Pow,
+    Rational,
+    S,
+    simplify,
+    symbols,
+)
 from sympy.core.decorators import _sympifyit, call_highest_priority
 from sympy.core.function import UndefinedFunction
 from sympy.physics.quantum import Operator
+from sympy.physics.quantum.dagger import Dagger
 from sympy.physics.quantum.operator import Operator
 from sympy.printing.latex import print_latex
 from sympy.printing.pretty.stringpict import prettyForm
 
-__all__ = ["PoissonBracket"]
-
-# -----------------------------------------------------------------------------
-# Poisson Bracket
-# -----------------------------------------------------------------------------
-
 
 class PoissonBracket(Expr):
-    """The Poisson Bracket, in an unevaluated state.
-
-    Evaluating a Poisson Bracket is defined [1]_ as:
-    ``{A,B} = Sum_i (Der(A,q_i)*Der(B,p_i) - Der(A,p_i)*Der(B,q_i)``.
-    This class returns the Poisson Bracket in an unevaluated form. To evaluate the Poisson
-    Bracket, use the ``.doit()`` method.
-
-    Arguments:
-    ==========
-
-    A: Expr
-        The first argument of the bracket {A,B}
-    B: Expr
-        The second argument of the bracket {A,B}
-
-
-    IMPORTANT:
-    ==========
-    As the Poisson Bracket depends on taking partial derivatives with respect to
-    phase-space coordinates, these need to be provided in order for the ``.doit()`` method
-    to work. They can be provided through kwargs: coords=list, mom=list) at the creation
-    of the instance or after creation by setting indep_coords and indep_mom.
-
-    When working with generic functions, for symbolic evaluation, one needs to define the
-    inputs as non-commutative for the ordering of Mul and Add to work correctly when combining
-
-
-    Examples
-    ========
-
-    >>> from acchamiltonianandmatrices.LieMaps.Poisson import PoissonBracket
-    >>> from sympy import Function, symbols
-    >>> A = Function('A', commutative=False)
-    >>> B = Function('B', commutative=False)
-    >>> C = Function('C', commutative=False)
-    >>> D = Function('D', commutative=False)
-
-    Create a Poisson Bracket and use ``.doit()`` to evaluate it:
-
-    >>> pb = PoissonBracket(A,B)
-    >>> pb
-    {A,B}
+    """
+    Operator class for the Poisson Bracket - allows to have it as a symbolic operator
     """
 
     #     _op_priority = 11.0
     _is_commutative = False
 
-    def __new__(cls, A, B, **kwargs):
-        r = cls.eval(A, B)
+    def __new__(cls, A, B, debug=False, **kwargs):
+        # before return the object, do basic
+        # testing and formatting of the bracket.
+        # - orders arguments and updated sign
+        # - returns S.Zero if:
+        #    * one of the argumnents is missing
+        #    * the arguments are equal
+        #    * one of the arguments is a sympy number
+        r = cls.eval(A, B, debug=debug, **kwargs)
+
+        # if a valid object is returned from eval
+        # than return this object
         if r is not None:
+            if debug:
+                print("Eval returned a value")
             return r
+
+        # if eval has not returned anything
+        # create a new object and return that one.
         obj = Expr.__new__(cls, A, B)
-        obj._A = A
-        obj._B = B
-        obj._indep_coords = kwargs.get("coords", None)
-        obj._indep_mom = kwargs.get("mom", None)
+        obj.A = A
+        obj.B = B
+
+        # if independent coordinates and momenta are
+        # provided store them in the object
+        obj.indep_coords = kwargs.get("coords", None)
+        obj.indep_mom = kwargs.get("mom", None)
+
+        # store if the ordering has been reversed
+        # this is used in the doit method, otherwise
+        # the sign is wrong.
+        obj.order = 1
+
+        # set debug to true to get intermediate outputs
+        # for code debugging
+        obj.debug = debug
         return obj
 
     @classmethod
-    def eval(cls, a, b):
+    def eval(cls, a, b, debug, **kwargs):
+        # check if both arguments of the
+        # bracket are given otherwise return Zero
         if not (a and b):
+            if debug:
+                print("Missing term")
             return S.Zero
+
+        # check if both arguments of the bracket
+        # are equal, if yes return Zero
         if a == b:
+            if debug:
+                print("Bracket of equal aruments is Zero.")
             return S.Zero
+
+        # check if one of the bracket arguments is
+        # a sympy number, if yes return Zero.
         if a.is_number or b.is_number:
+            if debug:
+                print("At least one argument is a number, bracket is Zero")
             return S.Zero
-        try:
-            if a.compare(b) == 1:
-                return S.NegativeOne * cls(b, a)
-        except TypeError:
+
+        # order the elements
+        #
+        # IMPORTANT NOTE:
+        # ---------------
+        # Something tricky I do not fully understand:
+        # In order for this to work below "-nob" needs
+        # to be returned, when returning "S.NegativeOne * nob",
+        # self.indep_coords and self.indep_mom are overwritten
+        # with None such that the expr method fails.
+        # Probably has something to do with how sympy handles
+        # "Mul" objects, but I was unable to understand the cause
+        #
+
+        if isinstance(a, UndefinedFunction):
             tmp = symbols("tmp")
-            if a(tmp).compare(b(tmp)) == 1:
-                return S.NegativeOne * cls(b, a)
-
-    @property
-    def A(self):
-        return self._A
-
-    @A.setter
-    def A(self, value):
-        self._A = value
-
-    @property
-    def B(self):
-        return self._B
-
-    @B.setter
-    def B(self, value):
-        self._B = value
-
-    @property
-    def indep_coords(self):
-        return self._indep_coords
-
-    @indep_coords.setter
-    def indep_coords(self, value):
-        self._indep_coords = value
-
-    @property
-    def indep_mom(self):
-        return self._indep_mom
-
-    @indep_mom.setter
-    def indep_mom(self, value):
-        self._indep_mom = value
+            if isinstance(b, UndefinedFunction):
+                if a(tmp).compare(b(tmp)) == 1:
+                    if debug:
+                        print(
+                            "Interchanging order of arguments and put minus sign in front of bracket."
+                        )
+                    nob = cls(b, a, **kwargs)
+                    nob.order = -1
+                    return -nob
+            else:
+                if a(tmp).compare(b) == 1:
+                    if debug:
+                        print(
+                            "Interchanging order of arguments and put minus sign in front of bracket."
+                        )
+                    nob = cls(b, a, **kwargs)
+                    nob.order = -1
+                    return -nob
+        elif isinstance(b, UndefinedFunction):
+            tmp = symbols("tmp")
+            if a.compare(b(tmp)) == 1:
+                if debug:
+                    print(
+                        "Interchanging order of arguments and put minus sign in front of bracket."
+                    )
+                nob = cls(b, a, **kwargs)
+                nob.order = -1
+                return -nob
+        else:
+            if a.compare(b) == 1:
+                if debug:
+                    print(
+                        "Interchanging order of arguments and put minus sign in front of bracket."
+                    )
+                nob = cls(b, a, **kwargs)
+                nob.order = -1
+                return -nob
 
     @property
     def free_symbols(self):
+        """
+        Return the free symbols.
+        """
         return self.A.free_symbols.union(self.B.free_symbols)
 
     @property
     def expr(self):
+        """
+        Return the full expression.
+        """
         if self.indep_coords and self.indep_mom:
             hp = S(0)
             for qi, pi in zip(self.indep_coords, self.indep_mom):
@@ -141,41 +166,148 @@ class PoissonBracket(Expr):
 
     def _eval_derivative(self, symbol):
         """
-        Explicitly perform the derivative. This is
-        necessary to get the full expanded expression
+        Necessary to get the full expanded expression
         when one of the arguments is itself a PoissonBracket.
         In other words to allow evalutation of nested Poisson Brackets.
         """
         new_expr = self.expr.diff(symbol)
-
         return new_expr
 
-    def doit(self, **hints):
+    def doit(self, debug=True, **hints):
         """ Evaluate commutator """
-        A = self.A
-        B = self.B
-        print(self.args)
-        print(self.A == self.args[0])
-        if isinstance(A, Operator) and isinstance(B, Operator):
+        A = self.args[0]
+        B = self.args[1]
+        order = self.order
+        if debug:
+            print(self)
+            print(self.__class__)
+            print(self.args)
             try:
-                comm = A._eval_commutator(B, **hints)
-            except NotImplementedError:
+                print(self.expr)
+            except:
+                print("expr failed")
+                pass
+
+        if order == 1:
+            if debug:
+                print("order 1")
+            if isinstance(A, Operator) and isinstance(B, Operator):
                 try:
-                    comm = -1 * B._eval_commutator(A, **hints)
+                    comm = A._eval_commutator(B, **hints)
                 except NotImplementedError:
-                    comm = None
-            if comm is not None:
-                return comm.doit(**hints)
-        if isinstance(A, UndefinedFunction) or isinstance(B, UndefinedFunction):
-            return self
-        if self.args[0] == -1:
-            A = self.args[1]
-            B = self.args[2]
+                    try:
+                        comm = -1 * B._eval_commutator(A, **hints)
+                    except NotImplementedError:
+                        comm = None
+                if comm is not None:
+                    return comm.doit(**hints)
+
             if isinstance(A, UndefinedFunction) or isinstance(B, UndefinedFunction):
+                if debug:
+                    print("One is undefined function")
                 return self
-            else:
-                return -self.expr
-        return self.expr
+
+            elif isinstance(A, Function) or isinstance(B, Function):
+                if debug:
+                    print("in Function")
+                try:
+                    print("expr:", self.expr)
+                    return self.expr
+                except RecursionError:
+                    print("Check coords and mom if you expected this to evaluate.")
+                    return self
+
+            return self.expr
+
+        else:
+            if debug:
+                print("order -1")
+
+            if isinstance(A, UndefinedFunction) or isinstance(B, UndefinedFunction):
+                if debug:
+                    print("One is undefined function")
+                    print(self)
+                h = self
+                return h
+
+            elif isinstance(A, Function) or isinstance(B, Function):
+                if debug:
+                    print("in Function")
+
+                try:
+                    print("expr:", self.args)
+                    #                     print(self.indep_coords)
+                    h = self.expr
+                    return h
+                except RecursionError:
+                    print("Check coords and mom if you expected this to evaluate.")
+                    return self
+
+            return (
+                S.NegativeOne
+                * PoissonBracket(A, B, coords=self.indep_coords, mom=self.indep_mom).expr
+            )
+
+    def _eval_expand_commutator(self, **hints):
+        A = self.A  # self.args[0]
+        B = self.B  # self.args[1]
+
+        if isinstance(A, Add):
+            # [A + B, C]  ->  [A, C] + [B, C]
+            sargs = []
+            for term in A.args:
+                comm = PoissonBracket(term, B)
+                print(comm.__class__)
+                if isinstance(comm, PoissonBracket):
+                    comm = comm._eval_expand_commutator()
+                sargs.append(comm)
+            #             print(sargs)
+            return Add(*sargs)
+        elif isinstance(B, Add):
+            # [A, B + C]  ->  [A, B] + [A, C]
+            sargs = []
+            for term in B.args:
+                comm = PoissonBracket(A, term)
+                if isinstance(comm, PoissonBracket):
+                    comm = comm._eval_expand_commutator()
+                sargs.append(comm)
+            return Add(*sargs)
+        elif isinstance(A, Mul):
+            # [A*B, C] -> A*[B, C] + [A, C]*B
+            a = A.args[0]
+            b = Mul(*A.args[1:])
+            c = B
+            comm1 = PoissonBracket(b, c)
+            comm2 = PoissonBracket(a, c)
+            if isinstance(comm1, PoissonBracket):
+                comm1 = comm1._eval_expand_commutator()
+            if isinstance(comm2, PoissonBracket):
+                comm2 = comm2._eval_expand_commutator()
+            first = Mul(a, comm1)
+            second = Mul(comm2, b)
+            #             print(first,second)
+            return Add(first, second)
+        elif isinstance(B, Mul):
+            # [A, B*C] -> [A, B]*C + B*[A, C]
+            a = A
+            b = B.args[0]
+            c = Mul(*B.args[1:])
+            comm1 = PoissonBracket(a, b)
+            comm2 = PoissonBracket(a, c)
+            if isinstance(comm1, PoissonBracket):
+                comm1 = comm1._eval_expand_commutator()
+            if isinstance(comm2, PoissonBracket):
+                comm2 = comm2._eval_expand_commutator()
+            first = Mul(comm1, c)
+            second = Mul(b, comm2)
+            return Add(first, second)
+        elif isinstance(A, Pow):
+            # [A**n, C] -> A**(n - 1)*[A, C] + A**(n - 2)*[A, C]*A + ... + [A, C]*A**(n-1)
+            return self._expand_pow(A, B, 1)
+        elif isinstance(B, Pow):
+            # [A, C**n] -> C**(n - 1)*[C, A] + C**(n - 2)*[C, A]*C + ... + [C, A]*C**(n-1)
+            return self._expand_pow(B, A, -1)
+        return self
 
     def _expand_pow(self, A, B, sign):
         exp = A.exp
@@ -193,70 +325,6 @@ class PoissonBracket(Expr):
             result += base ** (exp - 1 - i) * comm * base ** i
         return sign * result.expand()
 
-    def _eval_expand_commutator(self, **hints):
-        A = self.A  # self.args[0]
-        B = self.B  # self.args[1]
-
-        if isinstance(A, Add):
-            # [A + B, C]  ->  [A, C] + [B, C]
-            sargs = []
-            for term in A.args:
-                comm = PoissonBracket(term, B)
-                if isinstance(comm, PoissonBracket):
-                    comm = comm._eval_expand_commutator()
-                sargs.append(comm)
-            return Add(*sargs)
-
-        elif isinstance(B, Add):
-            # [A, B + C]  ->  [A, B] + [A, C]
-            sargs = []
-            for term in B.args:
-                comm = PoissonBracket(A, term)
-                if isinstance(comm, PoissonBracket):
-                    comm = comm._eval_expand_commutator()
-                sargs.append(comm)
-            return Add(*sargs)
-
-        elif isinstance(A, Mul):
-            # [A*B, C] -> A*[B, C] + [A, C]*B
-            a = A.args[0]
-            b = Mul(*A.args[1:])
-            c = B
-            comm1 = PoissonBracket(b, c)
-            comm2 = PoissonBracket(a, c)
-            if isinstance(comm1, PoissonBracket):
-                comm1 = comm1._eval_expand_commutator()
-            if isinstance(comm2, PoissonBracket):
-                comm2 = comm2._eval_expand_commutator()
-            first = Mul(a, comm1)
-            second = Mul(comm2, b)
-            return Add(first, second)
-
-        elif isinstance(B, Mul):
-            # [A, B*C] -> [A, B]*C + B*[A, C]
-            a = A
-            b = B.args[0]
-            c = Mul(*B.args[1:])
-            comm1 = PoissonBracket(a, b)
-            comm2 = PoissonBracket(a, c)
-            if isinstance(comm1, PoissonBracket):
-                comm1 = comm1._eval_expand_commutator()
-            if isinstance(comm2, PoissonBracket):
-                comm2 = comm2._eval_expand_commutator()
-            first = Mul(comm1, c)
-            second = Mul(b, comm2)
-            return Add(first, second)
-
-        elif isinstance(A, Pow):
-            # [A**n, C] -> A**(n - 1)*[A, C] + A**(n - 2)*[A, C]*A + ... + [A, C]*A**(n-1)
-            return self._expand_pow(A, B, 1)
-
-        elif isinstance(B, Pow):
-            # [A, C**n] -> C**(n - 1)*[C, A] + C**(n - 2)*[C, A]*C + ... + [C, A]*C**(n-1)
-            return self._expand_pow(B, A, -1)
-
-        return self
-
     def _latex(self, printer, *args):
         news = []
         for arg in self.args[:2]:
@@ -264,9 +332,9 @@ class PoissonBracket(Expr):
                 news.append(
                     " + ".join(
                         [
-                            printer._print(a.func, *args)
+                            printer.doprint(a.func, *args)
                             if a.is_Function
-                            else printer._print(a, *args)
+                            else printer.doprint(a, *args)
                             for a in arg.args
                         ]
                     )
@@ -276,36 +344,33 @@ class PoissonBracket(Expr):
                 news.append(printer.doprint(arg, *args))
 
             elif isinstance(arg, Mul):
-                news.append(" * ".join([printer._print(arg, *args) for arg in self.args[:2]]))
-
+                news.append(
+                    " * ".join(
+                        [
+                            printer.doprint(a.func, *args)
+                            if a.is_Function
+                            else printer.doprint(a, *args)
+                            for a in arg.args
+                        ]
+                    )
+                )
             elif isinstance(arg, Pow):
                 if isinstance(arg.args[0], UndefinedFunction):
-                    news.append("{}^{}".format([printer._print(a) for a in arg.args]))
+                    news.append("{}^{}".format([printer.doprint(a) for a in arg.args]))
                 elif isinstance(arg.args[0], Function):
                     news.append(
                         "{}^{}".format(
-                            printer._print(arg.args[0].func, *args),
-                            printer._print(arg.args[1], *args),
+                            printer.doprint(arg.args[0].func, *args),
+                            printer.doprint(arg.args[1], *args),
                         )
                     )
                 else:
-                    news.append(printer._print(arg, *args))
+                    news.append(printer.doprint(arg, *args))
 
             elif isinstance(arg, Function) and not (isinstance(arg, UndefinedFunction)):
-                news.append(printer._print(arg.func, *args))
+                news.append(printer.doprint(arg.func, *args))
 
             else:  # isinstance(arg, Function) and isinstance(arg,UndefinedFunction):
-                news.append(printer._print(arg, *args))
+                news.append(printer.doprint(arg, *args))
 
-        # print(news)
         return "\\lbrace %s,%s\\rbrace" % tuple(news)
-
-    # legacy - kept for demo
-    # return "\\lbrace %s,%s\\rbrace" % tuple(
-    #     [
-    #         printer._print(arg.func, *args)
-    #         if arg.is_Function and not (isinstance(arg, UndefinedFunction))
-    #         else printer._print(arg, *args)
-    #         for arg in self.args[:2]
-    #     ]
-    # )
