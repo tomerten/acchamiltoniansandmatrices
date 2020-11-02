@@ -173,7 +173,7 @@ class PoissonBracket(Expr):
         new_expr = self.expr.diff(symbol)
         return new_expr
 
-    def doit(self, debug=True, **hints):
+    def doit(self, debug=False, **hints):
         """ Evaluate commutator """
         A = self.args[0]
         B = self.args[1]
@@ -211,7 +211,6 @@ class PoissonBracket(Expr):
                 if debug:
                     print("in Function")
                 try:
-                    print("expr:", self.expr)
                     return self.expr
                 except RecursionError:
                     print("Check coords and mom if you expected this to evaluate.")
@@ -235,8 +234,6 @@ class PoissonBracket(Expr):
                     print("in Function")
 
                 try:
-                    print("expr:", self.args)
-                    #                     print(self.indep_coords)
                     h = self.expr
                     return h
                 except RecursionError:
