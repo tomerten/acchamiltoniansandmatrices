@@ -319,42 +319,66 @@ double_pb_doit_pass = [
         (C(x),),
         {},
         {"coords": [x], "mom": [px]},
-        -PoissonBracket(C(x), PoissonBracket(A(x, px), B(x))),
+        Derivative(C(x), x) * Derivative(A(x, px), (px, 2)) * Derivative(B(x), x),
     ),
     (
         (A(x), B(x, px)),
         (C(x),),
         {},
         {"coords": [x], "mom": [px]},
-        -PoissonBracket(C(x), PoissonBracket(A(x), B(x, px))),
+        -Derivative(C(x), x) * Derivative(A(x), x) * Derivative(B(x, px), (px, 2)),
     ),
-    (
-        (A(x), B(x)),
-        (C(x, px),),
-        {},
-        {"coords": [x], "mom": [px]},
-        -PoissonBracket(C(x, px), PoissonBracket(A(x), B(x))),
-    ),
+    ((A(x), B(x)), (C(x, px),), {}, {"coords": [x], "mom": [px]}, 0),
     (
         (A(x, px), B(x, px)),
         (C(x),),
         {},
         {"coords": [x], "mom": [px]},
-        -PoissonBracket(C(x), PoissonBracket(A(x, px), B(x, px))),
+        -Derivative(C(x), x)
+        * (
+            -Derivative(A(x, px), px) * Derivative(B(x, px), px, x)
+            - Derivative(A(x, px), (px, 2)) * Derivative(B(x, px), x)
+            + Derivative(A(x, px), x) * Derivative(B(x, px), (px, 2))
+            + Derivative(A(x, px), px, x) * Derivative(B(x, px), px)
+        ),
     ),
     (
         (A(x, px), B(x)),
         (C(x, px),),
         {},
         {"coords": [x], "mom": [px]},
-        -PoissonBracket(C(x, px), PoissonBracket(A(x, px), B(x))),
+        S.NegativeOne
+        * (
+            -Derivative(C(x, px), px)
+            * (
+                -Derivative(A(x, px), px) * Derivative(B(x), (x, 2))
+                - Derivative(A(x, px), px, x) * Derivative(B(x), x)
+            )
+            - Derivative(C(x, px), x) * Derivative(A(x, px), (px, 2)) * Derivative(B(x), x)
+        ),
     ),
     (
         (A(x, px), B(x, px)),
         (C(x, px),),
         {},
         {"coords": [x], "mom": [px]},
-        -PoissonBracket(C(x, px), PoissonBracket(A(x, px), B(x, px))),
+        S.NegativeOne
+        * (
+            -Derivative(C(x, px), px)
+            * (
+                -Derivative(A(x, px), px) * Derivative(B(x, px), (x, 2))
+                + Derivative(A(x, px), x) * Derivative(B(x, px), px, x)
+                + Derivative(A(x, px), (x, 2)) * Derivative(B(x, px), px)
+                - Derivative(A(x, px), px, x) * Derivative(B(x, px), x)
+            )
+            + Derivative(C(x, px), x)
+            * (
+                -Derivative(A(x, px), px) * Derivative(B(x, px), px, x)
+                - Derivative(A(x, px), (px, 2)) * Derivative(B(x, px), x)
+                + Derivative(A(x, px), x) * Derivative(B(x, px), (px, 2))
+                + Derivative(A(x, px), px, x) * Derivative(B(x, px), px)
+            )
+        ),
     ),
     (
         (A(x, px), B(x)),
