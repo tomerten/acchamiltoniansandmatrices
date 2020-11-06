@@ -198,6 +198,23 @@ class PoissonBracket(Expr):
 
         return hp
 
+    def _expand_pow(self, A, B, sign):
+        """ Expand power of an argument in the bracket """
+        exp = A.exp
+        if not exp.is_integer or not exp.is_constant() or abs(exp) <= 1:
+            # nothing to do
+            return self
+        base = A.base
+        if exp.is_negative:
+            base = A.base ** -1
+            exp = -exp
+        comm = PoissonBracket(base, B).expand(commutator=True)
+
+        result = base ** (exp - 1) * comm
+        for i in range(1, exp):
+            result += base ** (exp - 1 - i) * comm * base ** i
+        return sign * result.expand()
+
     def _eval_expand_commutator(self, **hints):
         """ Method to expand Poisson Brackets"""
         # TODO: Jacobi Id
@@ -262,3 +279,57 @@ class PoissonBracket(Expr):
             # [A, C**n] -> C**(n - 1)*[C, A] + C**(n - 2)*[C, A]*C + ... + [C, A]*C**(n-1)
             return self._expand_pow(B, A, -1)
         return self
+
+    def _latex(self, printer, *args):
+        news = []
+        # print(colored(self.args, "red"))
+        # print(colored(type(self), "green"))
+        for arg in self.args[:2]:
+            # print(colored(arg, "magenta"))
+            if isinstance(arg, Add):
+                news.append(
+                    " + ".join(
+                        [
+                            printer._print(a.func, *args)
+                            if a.is_Function
+                            else printer._print(a, *args)
+                            for a in arg.args
+                        ]
+                    )
+                )
+
+            elif isinstance(arg, PoissonBracket):
+                # print(colored(arg.args, "red"))
+                news.append(printer.doprint(arg, *args))
+
+            # elif isinstance(arg, Mul):
+            #    print(colored(arg.args, "yellow"))
+            #    # news.append("".join([printer._print(arg, *args) for arg in self.args[:2]]))
+            #    news.append("".join([printer._print(a, *args) for a in arg.args[:2]]))
+
+            elif isinstance(arg, Pow):
+                if isinstance(arg.args[0], UndefinedFunction):
+                    news.append("{}^{}".format([printer._print(a) for a in arg.args]))
+                elif isinstance(arg.args[0], Function):
+                    news.append(
+                        "{}^{}".format(
+                            printer._print(arg.args[0].func, *args),
+                            printer._print(arg.args[1], *args),
+                        )
+                    )
+                else:
+                    news.append(printer._print(arg, *args))
+
+            elif isinstance(arg, Function) and not (isinstance(arg, UndefinedFunction)):
+                # print("function ", arg, arg.func)
+                news.append(printer._print(arg.func, *args))
+
+            else:  # isinstance(arg, Function) and isinstance(arg,UndefinedFunction):
+                # print(colored("here", "blue"))
+                # print(colored(arg, "blue"))
+                # print(type(arg))
+                news.append(printer._print(arg, *args))
+
+            # print(news)
+        # print(tuple(news))
+        return "\\lbrace %s,%s \\rbrace " % tuple(news)
