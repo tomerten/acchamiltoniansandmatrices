@@ -143,8 +143,6 @@ class LieOperator(Expr):
                 _ham1.indep_mom,
             )
 
-            return _ham1.Poisson(_ham2)
-
     # Calcualte Poisson bracket with input function
     def Poisson(self, other):
         _h1 = self.ham

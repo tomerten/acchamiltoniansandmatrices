@@ -198,6 +198,17 @@ class PoissonBracket(Expr):
 
         return hp
 
+    def _subs(self, old, new):
+        """ Overwrite subs so that coords and mom are preserved """
+        if self.__class__.__name__ == "PoissonBracket":
+            newA = self.args[0].subs(old, new)
+            newB = self.args[1].subs(old, new)
+            c = self.coords
+            m = self.mom
+            return PoissonBracket(newA, newB, coords=c, mom=m)
+        else:
+            return self.subs(old, new)
+
     def _expand_pow(self, A, B, sign):
         """ Expand power of an argument in the bracket """
         exp = A.exp
@@ -221,12 +232,14 @@ class PoissonBracket(Expr):
 
         A = self.args[0]
         B = self.args[1]
+        coords = self.coords
+        mom = self.mom
 
         if isinstance(A, Add):
             # {A + B, C}  ->  {A, C} + {B, C}
             sargs = []
             for term in A.args:
-                comm = PoissonBracket(term, B)
+                comm = PoissonBracket(term, B, coords=coords, mom=mom)
                 if isinstance(comm, PoissonBracket):
                     comm = comm._eval_expand_commutator()
                 sargs.append(comm)
@@ -236,7 +249,7 @@ class PoissonBracket(Expr):
             # {A, B + C}  ->  {A, B} + {A, C}
             sargs = []
             for term in B.args:
-                comm = PoissonBracket(A, term)
+                comm = PoissonBracket(A, term, coords=coords, mom=mom)
                 if isinstance(comm, PoissonBracket):
                     comm = comm._eval_expand_commutator()
                 sargs.append(comm)
@@ -247,8 +260,8 @@ class PoissonBracket(Expr):
             a = A.args[0]
             b = Mul(*A.args[1:])
             c = B
-            comm1 = PoissonBracket(b, c)
-            comm2 = PoissonBracket(a, c)
+            comm1 = PoissonBracket(b, c, coords=coords, mom=mom)
+            comm2 = PoissonBracket(a, c, coords=coords, mom=mom)
             if isinstance(comm1, PoissonBracket):
                 comm1 = comm1._eval_expand_commutator()
             if isinstance(comm2, PoissonBracket):
@@ -262,8 +275,8 @@ class PoissonBracket(Expr):
             a = A
             b = B.args[0]
             c = Mul(*B.args[1:])
-            comm1 = PoissonBracket(a, b)
-            comm2 = PoissonBracket(a, c)
+            comm1 = PoissonBracket(a, b, coords=coords, mom=mom)
+            comm2 = PoissonBracket(a, c, coords=coords, mom=mom)
             if isinstance(comm1, PoissonBracket):
                 comm1 = comm1._eval_expand_commutator()
             if isinstance(comm2, PoissonBracket):
