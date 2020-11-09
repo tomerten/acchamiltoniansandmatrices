@@ -1,6 +1,7 @@
 # Ref: Wolski Lectures on Linear Dynamics
 from sympy import (
     Derivative,
+    NumberSymbol,
     Rational,
     S,
     Symbol,
@@ -12,6 +13,7 @@ from sympy import (
     sqrt,
     symbols,
 )
+from sympy.core.singleton import Singleton
 
 
 def half():
