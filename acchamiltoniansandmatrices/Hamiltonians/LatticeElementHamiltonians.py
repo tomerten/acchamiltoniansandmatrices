@@ -352,7 +352,7 @@ def HamSolenoid6DparaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, ks):
 def HamCombBend6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k0, k1, h):
     """
     k0 = q/P0*b1
-    k! = q/P0 * b2/r0
+    k1 = q/P0 * b2/r0
     """
     return HamDrift6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta) + L * (
         (k0 - h) * x ** 2 - half() * k1 * y ** 2 - h / beta0 * x * delta
@@ -361,5 +361,9 @@ def HamCombBend6DParaxialSecondOrder(beta0, gamma0, L, x, px, y, py, delta, k0, 
 
 def HamSext6D(beta0, gamma0, L, x, px, y, py, delta, k2):
     return HamDrift6D(beta0, gamma0, L, x, px, y, py, delta) + L * (
-        1 / 6 * k2 * (x ** 3 - 3 * x * y ** 2)
+        Rational(1, 6) * k2 * (x ** 3 - 3 * x * y ** 2)
     )
+
+
+def HamSext4D(beta0, gamma0, L, x, px, y, py, k2):
+    return HamSext6D(beta0, gamma0, L, x, px, y, py, 0, k2)

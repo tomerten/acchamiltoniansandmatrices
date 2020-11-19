@@ -13,8 +13,14 @@ from sympy import (
 )
 
 from .SymbMatrices import (
-    RMsymbRFTM0106D,
-    RsymbDipole,
+    RMsymbDipoleComb,  # extra constant 6D vector - map is of the form Rx+M
+)
+from .SymbMatrices import (
+    RMsymbRFTM0106D,  # extra constant 6D vector - map is of the form Rx+M
+)
+from .SymbMatrices import (
+    RsymbDipole4D,
+    RsymbDipole6D,
     RsymbDipoleComb,
     RsymbDipoleFringe,
     RsymbDrift4D,
@@ -59,8 +65,12 @@ RnpDrift4D = lambdify(driftargs, RsymbDrift4D(*driftargs), modules="numpy")
 
 # DIPOLE MATRICES
 dipoleargs = relArgs + (L, k0)
-RnpDipole = lambdify(dipoleargs, RsymbDipole(*dipoleargs), "numpy")
-RnpDipoleComb = lambdify((dipoleargs + (k1,)), RsymbDipoleComb(*dipoleargs, k1), "numpy")
+RnpDipole6D = lambdify(dipoleargs, RsymbDipole6D(*dipoleargs), "numpy")
+RnpDipole4D = lambdify(dipoleargs, RsymbDipole4D(*dipoleargs), "numpy")
+
+dipolecombargs = (beta0, gamma0, L, h, k0, k1)
+RnpDipoleComb = lambdify(dipolecombargs, RsymbDipoleComb(*dipolecombargs), "numpy")
+RMnpDipoleComb = lambdify(dipolecombargs, RMsymbDipoleComb(*dipolecombargs), "numpy")
 RnpDipoleFringe = lambdify(K1, RsymbDipoleFringe(K1), "numpy")
 
 # QUADRUPOLE MATRICES

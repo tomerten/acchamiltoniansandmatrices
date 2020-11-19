@@ -78,7 +78,7 @@ def GenerateNDimCoordinateGrid(N, NPOINTS, pmin=1e-6, pmax=1e-4, man_ranges=None
     coordinate_grid = np.array([*grid])
     print(
         "Shape: {} - Number of paritcles: {} ".format(
-            coordinate_grid.shape, coordinate_grid.size
+            coordinate_grid.shape, coordinate_grid.size // N
         )
     )
     return coordinate_grid

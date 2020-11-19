@@ -48,10 +48,25 @@ def RsymbDrift4D(beta0, gamma0, L):
     L       : float | sympy symbol
         Length of the drift.
     """
-    RsymbDrift6D(beta0, gamma0, L)[0:4, 0:4]
+    return RsymbDrift6D(beta0, gamma0, L)[0:4, 0:4]
 
 
-def RsymbDipole(beta0, gamma0, L, k0):
+def RsymbDipole6D(beta0, gamma0, L, k0):
+    """
+    6D R matrix for a dipole.
+
+    Arguments:
+    ----------
+    beta0   : float | sympy symbol
+        Relativistic beta
+    gamma0  : float | sympy symbol
+        Relativistic gamma
+    L       : float | sympy symbol
+        Length of the dipole.
+    k0: float | sympy symbol
+        Magnet strength
+        k0 = 1/ rho , ol = omega * L = k0 * L
+    """
     ol = k0 * L
     c = cos(ol)
     s = sin(ol)
@@ -72,6 +87,31 @@ def RsymbDipole(beta0, gamma0, L, k0):
             [0, 0, 0, 0, 0, 1],
         ]
     )
+
+
+def RsymbDipoleSmallAngle(beta0, gamma0, L, k0):
+    theta = k0 * L
+    return Matrix(
+        [
+            [1, L, 0, 0, 0, L * theta * half() / beta0],
+            [0, 1, 0, 0, 0, theta / beta0],
+            [0, 0, 1, L, 0, 0],
+            [0, 0, 0, 1, 0, 0],
+            [
+                0,
+                -L * theta * half() / beta0,
+                0,
+                0,
+                1,
+                L / (beta0 * gamma0) ** 2 - L / beta0 ** 2,
+            ],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
+
+
+def RsymbDipole4D(beta0, gamma0, L, k0):
+    return RsymbDipole6D(beta0, gamma0, L, k0)[0:4, 0:4]
 
 
 def RsymbQuad6D(beta0, gamma0, L, k1):
@@ -212,11 +252,38 @@ def RsymbDipoleFringe(K1):
     )
 
 
-def RsymbDipoleComb(beta0, gamma0, L, k0, k1):
+def RsymbDipoleComb(beta0, gamma0, L, h, k0, k1):
     """
     k0 = q/P0*b1
     k1=q/P0*b2/r0
     """
+    ox = sqrt(h * k0 + k1)
+    oy = sqrt(k1)
+    cx = cos(ox * L)
+    sx = sin(ox * L)
+    chy = cosh(oy * L)
+    shy = sinh(oy * L)
+    hover = h / beta0
+    return Matrix(
+        [
+            [cx, sx / ox, 0, 0, 0, hover * (1 - cx) / ox ** 2],
+            [-ox * sx, cx, 0, 0, 0, hover * sx / ox],
+            [0, 0, chy, shy / oy, 0, 0],
+            [0, 0, oy * shy, chy, 0, 0],
+            [
+                -hover * sx / ox,
+                -hover * (1 - cx) / ox ** 2,
+                0,
+                0,
+                1,
+                L / (beta0 * gamma0) ** 2 - hover ** 2 * (ox * L - sx) / ox ** 3,
+            ],
+            [0, 0, 0, 0, 0, 1],
+        ]
+    )
+
+
+def RMsymbDipoleComb(beta0, gamma0, L, h, k0, k1):
     ox = sqrt(k0 ** 2 + k1)
     oy = sqrt(k1)
     cx = cos(ox * L)
@@ -226,19 +293,12 @@ def RsymbDipoleComb(beta0, gamma0, L, k0, k1):
     kob = k0 / beta0
     return Matrix(
         [
-            [cx, sx / ox, 0, 0, 0, kob * (1 - cx) / ox ** 2],
-            [-ox * sx, cx, 0, 0, 0, kob * sx / ox],
-            [0, 0, chy, shy / oy, 0, 0],
-            [0, 0, oy * shy, chy, 0, 0],
-            [
-                -kob * sx / ox,
-                -kob * (1 - cx) / ox ** 2,
-                0,
-                0,
-                1,
-                L / (beta0 * gamma0) ** 2 - kob ** 2 * (ox * L - sx) / ox ** 3,
-            ],
-            [0, 0, 0, 0, 0, 1],
+            [(h - k0) * (1 - cx) / ox ** 2],
+            [(h - k0) * sx / ox],
+            [0],
+            [0],
+            [0],
+            [0],
         ]
     )
 
@@ -251,7 +311,7 @@ def RsymbQuad6DThin(L, k1):
             [1, 0, 0, 0, 0, 0],
             [-1 / f, 1, 0, 0, 0, 0],
             [0, 0, 1, 0, 0, 0],
-            [0, 0, 0, 1 / f, 1, 0],
+            [0, 0, 1 / f, 1, 0, 0],
             [0, 0, 0, 0, 1, 0],
             [0, 0, 0, 0, 0, 1],
         ]
