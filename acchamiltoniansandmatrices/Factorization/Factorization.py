@@ -148,6 +148,9 @@ def dragt_finn_factorization(taylor, debug=False):
         Debug Flag, if set, intermediate steps are written to log.
 
     """
+    if debug:
+        log.setup()
+
     LieProduct = []
     degree = 0
 
@@ -177,7 +180,20 @@ def dragt_finn_factorization(taylor, debug=False):
 
 def transform_taylor(ham, taylor, hom_order, degree=3):  # adjust higher order coeffs
     # getaround for .subs() being iterative
-    sym_x1, sym_y1, sym_z1, sym_px1, sym_py1, sym_pz1 = sympy.symbols(
+    """
+    Method to clean up the Taylor vector map.
+
+    Adjust higher order coeffs, getaround for .subs() being iterative.
+
+    Arguments:
+    ----------
+    ham
+    taylor
+    hom_order
+    degree
+
+    """
+    sym_x1, sym_y1, sym_z1, sym_px1, sym_py1, sym_pz1 = symbols(
         "x_1 y_1 z_1 p_{x1} p_{y1} \delta_1"
     )
     variables = (sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz)
@@ -209,7 +225,10 @@ def transform_taylor(ham, taylor, hom_order, degree=3):  # adjust higher order c
     return taylor
 
 
-def taylorize(LieHam, degree):  # Apply Lie map to get taylor map vector on 6d vector
+def taylorize(LieHam, degree):
+    """
+    Apply Lie map to get taylor map vector on 6d vector
+    """
     taylor_maps = []
 
     for i in LieHam.indep_coords:
@@ -236,8 +255,11 @@ def taylorize(LieHam, degree):  # Apply Lie map to get taylor map vector on 6d v
     return taylor_maps
 
 
-def truncate(LieHam, degree):  # cutoff Hamiltonian at specified degree
-    _epstemp = sympy.symbols("e")
+def truncate(LieHam, degree):
+    """
+    cutoff Hamiltonian at specified degree
+    """
+    _epstemp = symbols("e")
     fct = LieHam.ham
 
     for i in LieHam.indep_coords:
@@ -253,8 +275,9 @@ def truncate(LieHam, degree):  # cutoff Hamiltonian at specified degree
 
 
 def getKronPowers(state, order, dim_reduction=True):
-    """Calculates Kroneker powers of state vector
-       with dimension reduction
+    """
+    Calculates Kroneker powers of state vector
+    with dimension reduction
 
     e.g. for (x y) and order=2 returns:
     1, (x y), (x x*y y)
@@ -264,7 +287,7 @@ def getKronPowers(state, order, dim_reduction=True):
     """
     powers = [state]
     index = [np.ones(len(state), dtype=bool)]
-    for i in range(order - 1):
+    for _ in range(order - 1):
         state_i = np.kron(powers[-1], state)
         reduced, red_ind = cust_reduce(state_i)
         if dim_reduction:
@@ -280,6 +303,9 @@ def getKronPowers(state, order, dim_reduction=True):
 
 
 def cust_reduce(state):
+    """
+    Custom reduce funtion.
+    """
     state_str = state.astype(str)
     reduced_state = []
     unique = []
@@ -297,6 +323,9 @@ def cust_reduce(state):
 
 
 def taylor_to_weight_mat(_taylor):
+    """
+    Method to transform a Taylor map into weight matrices.
+    """
     degree = 0
     for polynomial in _taylor:
         comp_degree = poly(polynomial).total_degree()  # highest degree of hom poly in Lie map
