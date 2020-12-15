@@ -158,7 +158,20 @@ class LieLayer(Layer):
             self.W.append(K.variable(initial_weight_value))
 
         self.W[1] = K.variable(np.eye(N=input_dim, M=self.output_dim))
-        self.trainable_weights = self.W
+        for i in range(self.order + 1):
+            # print(self.W[i].shape)
+            if i != 1:
+                self.W[i] = self.add_weight(
+                    name="W" + str(i), shape=self.W[i].shape, trainable=True, initializer="zeros"
+                )
+            else:
+                self.W[i] = self.add_weight(
+                    name="W" + str(i),
+                    shape=self.W[i].shape,
+                    trainable=True,
+                    initializer="Identity",
+                )
+        # self.trainable_weights = self.W
         return
 
     def call(self, x, mask=None):

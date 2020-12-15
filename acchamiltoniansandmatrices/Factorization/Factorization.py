@@ -8,14 +8,34 @@ from operator import mul
 import mpmath as mp
 import numpy as np
 from mpmath import fac
-from sympy import init_printing, poly, symbols
+from sympy import O, init_printing, poly, symbols
 from sympy.core.decorators import _sympifyit, call_highest_priority
+from termcolor import colored
 
 from .. import log
 from ..LieMaps.LieOperator import LieOperator
 
 # define symbols to use in the functions
-sym_x, sym_y, sym_z, sym_px, sym_py, sym_pz = symbols("x y z p_x p_y \delta")
+sym_x, sym_y, sym_z, sym_px, sym_py, sym_pz = symbols("x y z p_x p_y delta")
+
+
+def get_indep_coords_taylor(taylor):
+    """
+    Method the get the free symbols or
+    independent variables from a Taylor
+    vector.
+
+    Arguments:
+    ----------
+    taylor  :   taylor vector
+        input list of polynomials
+
+    """
+    coords = set()
+    for p in taylor:
+        coords = coords.union(poly(p).free_symbols)
+
+    return list(coords)
 
 
 def prod(iterable):
@@ -25,7 +45,7 @@ def prod(iterable):
     return reduce(operator.mul, iterable, 1)
 
 
-def deg2_lie(taylor):
+def deg2_lie(taylor, coords):
     """
     Method to extract the linear transfer matrix from the linear part of the Taylor
     polynomial.
@@ -35,15 +55,23 @@ def deg2_lie(taylor):
     taylor: polynomial
         Taylor polynomial
 
+    coords: list
+        independent coordinates used in the Taylor vector
     """
+    log.setup()
+    log.info("Extracting linear transfer matrix from linear part of {}".format(taylor))
+
     I = np.identity(6)
     R = []
     i = len(taylor)
 
     for polynomial in taylor:
-        p = poly(polynomial, sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz)
+        p = poly(polynomial, *coords)  # sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz)
         monomials = p.monoms()
         coeffs = p.coeffs()
+
+        log.debug("Monomials      {}".format(monomials))
+        log.debug("Monomial coeff {}".format(coeffs))
 
         Matrow = []
         for j, row in enumerate(I):
@@ -62,7 +90,7 @@ def deg2_lie(taylor):
     return R
 
 
-def taylor_to_lie(taylor, degree):
+def taylor_to_lie(taylor, degree, coords):
     """
     Taylor map to Lie map.
 
@@ -72,18 +100,22 @@ def taylor_to_lie(taylor, degree):
         Taylor map vector.
     degree: int
         degree of the desired Lie map.
-
+    coords: list
+        independent coordinates
     """
+    log.setup()
+    log.info("Transforming Taylor to Lie.")
+
     # decide if linear or nonlinear
     if degree == 2:
-        lie = deg2_lie(taylor)  # linear case
+        lie = deg2_lie(taylor, coords)  # linear case
     else:
-        lie = degN_lie(taylor, degree)  # higher order maps
+        lie = degN_lie(taylor, degree, coords)  # higher order maps
 
     return lie
 
 
-def degN_lie(taylor, degree):  # higher order Lie maps
+def degN_lie(taylor, degree, coords):  # higher order Lie maps
     """
     Method to transform higher order Taylor maps to higher order
     Lie maps (beyond the linear parts).
@@ -94,6 +126,8 @@ def degN_lie(taylor, degree):  # higher order Lie maps
         Taylor map vector.
     degree: int
         degree of the desired Lie map.
+    coords: list
+        independent coordinates
 
     """
     # define temporary symbol to deal with the order
@@ -101,18 +135,20 @@ def degN_lie(taylor, degree):  # higher order Lie maps
     _epstemp = symbols("e")
 
     # immutable variable tuple
-    variables = (sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz)
+    variables = tuple(coords)
 
     # immutable tuple to track the sorting order of the various derivatives
     derivatives = (1, 0, 3, 2, 5, 4)  # order: d/dpx, d/dx, d/dpy, d/dy, d/dz, d/dz
 
     f = poly(
-        0, sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz
+        0,
+        *variables
+        # sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz
     )  # Lie map hom poly generated from taylor
 
     for var, polynomial in enumerate(taylor):
         # make sympy polynomial from the polynomial
-        p = poly(polynomial, sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz)
+        p = poly(polynomial, *variables)  # sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz)
 
         # generate an array of the monomial degrees
         order = [sum(mon) for mon in p.monoms()]
@@ -136,7 +172,7 @@ def degN_lie(taylor, degree):  # higher order Lie maps
     return f.subs(_epstemp, 0)
 
 
-def dragt_finn_factorization(taylor, debug=False):
+def dragt_finn_factorization(taylor, coords):
     """
     Dragt-Finn factorization of a Taylor map vector.
 
@@ -146,10 +182,13 @@ def dragt_finn_factorization(taylor, debug=False):
 
     debug: bool
         Debug Flag, if set, intermediate steps are written to log.
+    coords: list
+        independent coordinates
+
 
     """
-    if debug:
-        log.setup()
+    log.setup()
+    log.info("Starting dragt-finn factorization.")
 
     LieProduct = []
     degree = 0
@@ -163,12 +202,12 @@ def dragt_finn_factorization(taylor, debug=False):
 
     for i in range(2, degree + 2):
         # coeff match to get hom poly in Lie product maps
-        T = taylor_to_lie(taylor, i)
+        T = taylor_to_lie(taylor, i, coords)
 
         # Lie maps product as array
         LieProduct.append(T)
         taylor = transform_taylor(
-            T, taylor, i, degree
+            T, taylor, i, degree, coords
         )  # adjust higher order taylor coeff for next coeff extraction
 
         if i > 5:
@@ -178,7 +217,7 @@ def dragt_finn_factorization(taylor, debug=False):
     return LieProduct
 
 
-def transform_taylor(ham, taylor, hom_order, degree=3):  # adjust higher order coeffs
+def transform_taylor(ham, taylor, hom_order, coords, degree=3):  # adjust higher order coeffs
     # getaround for .subs() being iterative
     """
     Method to clean up the Taylor vector map.
@@ -190,13 +229,17 @@ def transform_taylor(ham, taylor, hom_order, degree=3):  # adjust higher order c
     ham
     taylor
     hom_order
+    coords
     degree
 
     """
+    log.setup()
+    log.info("Cleaning up Taylor vector map.")
+
     sym_x1, sym_y1, sym_z1, sym_px1, sym_py1, sym_pz1 = symbols(
-        "x_1 y_1 z_1 p_{x1} p_{y1} \delta_1"
+        "x_1 y_1 z_1 p_{x1} p_{y1} delta_1"
     )
-    variables = (sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz)
+    variables = tuple(coords)
     new_variables = (sym_x1, sym_px1, sym_y1, sym_py1, sym_z1, sym_pz1)
 
     if hom_order == 2:  # linear case needs more checking
@@ -211,9 +254,17 @@ def transform_taylor(ham, taylor, hom_order, degree=3):  # adjust higher order c
         taylor = [
             polynomial.subs([(i, j) for i, j in zip(vec, variables)]) for polynomial in int_taylor
         ]
-    else:  # higher order
+    else:  # higher order - note the order of the variables !!!!
+        log.warning(
+            "coords used - {}, phases used - {}".format(
+                [variables[0], variables[2], variables[4]],
+                [variables[1], variables[3], variables[5]],
+            )
+        )
         LiePoly = LieOperator(
-            -ham, [sym_x, sym_y, sym_z], [sym_px, sym_py, sym_pz]
+            -ham,
+            [variables[0], variables[2], variables[4]],
+            [variables[1], variables[3], variables[5]],
         )  # use hom poly ham of degree = hom_order
         mod_taylor = taylorize(
             LiePoly, degree + 1
@@ -322,28 +373,33 @@ def cust_reduce(state):
     return np.array(reduced_state), index
 
 
-def taylor_to_weight_mat(_taylor):
+def taylor_to_weight_mat(_taylor, coords):
     """
     Method to transform a Taylor map into weight matrices.
+
+    ADD COORDS
     """
+    log.setup()
+    log.info("Extracting weight matrices from Taylor vector.")
+
     degree = 0
+
     for polynomial in _taylor:
         comp_degree = poly(polynomial).total_degree()  # highest degree of hom poly in Lie map
         if degree <= comp_degree:
             degree = comp_degree
 
-    if len(_taylor) == 2:
-        coords = [sym_x, sym_px]
-    elif len(_taylor) == 4:
-        coords = [sym_x, sym_px, sym_y, sym_py]
-    elif len(_taylor) == 6:
-        coords = [sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz]
-    else:
-        raise TypeError("The dimension of the Taylor map vector does not match the phase space.")
+    # if len(_taylor) == 2:
+    #     coords = [sym_x, sym_px]
+    # elif len(_taylor) == 4:
+    #     coords = [sym_x, sym_px, sym_y, sym_py]
+    # elif len(_taylor) == 6:
+    #     coords = [sym_x, sym_px, sym_y, sym_py, sym_z, sym_pz]
+    # else:
+    #     raise TypeError("The dimension of the Taylor map vector does not match the phase space.")
 
     state_vectors, index = getKronPowers(coords, degree, dim_reduction=False)
-
-    #     print(state_vectors)
+    # print(state_vectors)
 
     W = []
 
