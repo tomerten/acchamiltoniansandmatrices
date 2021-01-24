@@ -56,6 +56,9 @@ def multi_countour_plot(
     # determine the number of rows needed for the plots
     nrows = len(hamlist) // 2
 
+    if nrows == 0:
+        nrows = 1
+
     # create the figure
     fig = plt.figure(constrained_layout=True, figsize=size)
     gs = fig.add_gridspec(nrows, 2)
