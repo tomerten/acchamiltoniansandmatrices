@@ -65,7 +65,9 @@ def multi_countour_plot(
 
     if d3:
         axes = [
-            fig.add_subplot(gs[i, j], projection="3d") for j in range(2) for i in range(nrows - 1)
+            fig.add_subplot(gs[i, j], projection="3d")
+            for j in range(2)
+            for i in range(nrows - 1)
         ]
     else:
         axes = [fig.add_subplot(gs[i, j]) for j in range(2) for i in range(nrows - 1)]
