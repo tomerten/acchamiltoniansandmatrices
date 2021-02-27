@@ -160,6 +160,8 @@ class PoissonBracket(Expr):
 
     def doit(self, **hints):
         """ Perform the Poisson Bracket"""
+        # print(self)
+        # print(self.coords)
         # load the phase-space coordinates
         c = self.coords
         m = self.mom
@@ -180,6 +182,8 @@ class PoissonBracket(Expr):
         A = self.args[0]
         B = self.args[1]
 
+        # print("A is : {}".format(A))
+        # print("B is : {}".format(B))
         # if one of the args is a Poisson Bracket
         # the outer c and m need to be used
         # we therefore overwrite them
