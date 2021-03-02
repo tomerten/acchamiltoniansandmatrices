@@ -54,7 +54,7 @@ def multi_countour_plot(
     Hlist = [ham(Xg, Pg) for ham in hamlist]
 
     # determine the number of rows needed for the plots
-    nrows = len(hamlist) // 2
+    nrows = len(hamlist) // 2 + 1
 
     if nrows == 0:
         nrows = 1
@@ -65,9 +65,7 @@ def multi_countour_plot(
 
     if d3:
         axes = [
-            fig.add_subplot(gs[i, j], projection="3d")
-            for j in range(2)
-            for i in range(nrows - 1)
+            fig.add_subplot(gs[i, j], projection="3d") for j in range(2) for i in range(nrows - 1)
         ]
     else:
         axes = [fig.add_subplot(gs[i, j]) for j in range(2) for i in range(nrows - 1)]

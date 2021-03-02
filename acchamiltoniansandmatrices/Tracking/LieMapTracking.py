@@ -95,6 +95,7 @@ def AssignHam(element, order=3, length=1, k=1, flag=1):
 def RingHam(
     beamline, BCH_order, poly_cutoff, doit=False
 ):  # combine beamline with BCH into one map
+    x, y, z, px, py, delta = symbols("x y z p_x p_y delta")
     poly_cutoff = poly_cutoff + 1
     for i, element in enumerate(beamline):
         if i == 0:
