@@ -1,3 +1,22 @@
+from sympy import Matrix, Poly, cos, sin, symbols
+
+
+def geteigenvects(R, symbols):
+    eig = R.eigenvects()
+
+    if eig[0][1] > 1:
+        eig1 = eig[0][2][0]
+        eig2 = eig[0][2][1]
+    else:
+        eig1 = eig[0][2][0]
+        eig2 = eig[1][2][0]
+
+    return (
+        (eig1.T * Matrix([symbols[0], symbols[1]]))[0],
+        (eig2.T * Matrix([symbols[0], symbols[1]]))[0],
+    )
+
+
 def prime_factors(n):
     """
     Adapted from:
@@ -16,7 +35,20 @@ def prime_factors(n):
     return set(factors)
 
 
-def getpoly(u, v, symorder, porder):
+def RotationMatrix2D(angle):
+    R = Matrix([[cos(angle), -sin(angle)], [sin(angle), cos(angle)]])
+    return R
+
+
+def explicitCheck(new_pols, rot_rep):
+    for p in new_pols:
+        if p == p.subs(rot_rep).expand():
+            print(p)
+        else:
+            print("{} nok".format(p))
+
+
+def getpoly(u, v, symorder, porder, symbols):
     """
     Returns polynomials of order below porder that
     are invariant under a rotation over an angle 2 pi / symorder.
@@ -34,15 +66,22 @@ def getpoly(u, v, symorder, porder):
     --------
     List of invariant polynomials.
     """
+    x = symbols[0]
+    y = symbols[1]
+    so = symorder
+    o = porder
+
     so = symorder
     o = porder
 
     pols = []
-    for a in range(5):
-        for b in range(5):
+    for a in range(porder + 1):
+        for b in range(porder + 1):
             if (a - b) % so == 0 and (a + b <= o):
+                # print(a, b, a - b, a + b)
                 #                 print(a,b,a-b)
                 ex = (u ** a * v ** b).expand().as_real_imag()
+                # print(ex)
                 if ex[0] != 0:
                     pols.append(ex[0])
                 if ex[1] != 0:
@@ -50,9 +89,6 @@ def getpoly(u, v, symorder, porder):
 
     # xy acts like a length for even symorders
     if symorder >= 4 and symorder % 2 == 0:
-        from sympy import symbols
-
-        x, y = symbols("x y")
         for i in range(1, porder // 4 + 1):
             pols.append(((x ** 2 * y ** 2) ** i).expand())
 
@@ -64,3 +100,8 @@ def getpoly(u, v, symorder, porder):
         new_pols.append(p)
 
     return new_pols
+
+
+def codict(expr, *x):
+    collected = Poly(expr, *x).as_expr()
+    return dict(i.as_independent(*x)[::-1] for i in Add.make_args(collected))
