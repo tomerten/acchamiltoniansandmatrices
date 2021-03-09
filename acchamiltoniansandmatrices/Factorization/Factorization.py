@@ -11,6 +11,7 @@ from mpmath import fac
 from sympy import O, init_printing, poly, symbols
 from sympy.core.decorators import _sympifyit, call_highest_priority
 from termcolor import colored
+from tqdm import tqdm
 
 from .. import log
 from ..LieMaps.LieOperator import LieOperator
@@ -282,13 +283,13 @@ def taylorize(LieHam, degree):
     """
     taylor_maps = []
 
-    for i in LieHam.indep_coords:
+    for i in tqdm(LieHam.indep_coords):
         fct = LieHam.LieMap(i, degree).doit()
         fct = truncate(fct, degree)
 
         taylor_maps.append(fct.expand())
 
-    for i in LieHam.indep_mom:
+    for i in tqdm(LieHam.indep_mom):
         fct = LieHam.LieMap(i, degree).doit()
         fct = truncate(fct, degree)
 
@@ -311,7 +312,9 @@ def truncate(LieHam, degree):
     cutoff Hamiltonian at specified degree
     """
     _epstemp = symbols("e")
-    fct = LieHam.ham
+    from sympy import N
+
+    fct = N(LieHam.ham)
 
     for i in LieHam.indep_coords:
         fct = fct.subs(i, i * _epstemp)

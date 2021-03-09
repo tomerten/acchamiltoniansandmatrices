@@ -7,6 +7,7 @@ from sympy import Add, Expr, Function, Mul, Pow, Rational, S, factorial, symbols
 from sympy.core.decorators import _sympifyit, call_highest_priority
 from sympy.core.function import UndefinedFunction
 from sympy.printing.latex import print_latex
+from tqdm import tqdm
 
 from .Poisson import PoissonBracket
 
@@ -159,9 +160,10 @@ class LieOperator(Expr):
         s = S(0)
 
         for i in range(power + 1):
-            s += Rational(1, factorial(i)) * (self.ExpPowerLieBracket(other, i)).ham
+            # print("{:5.2f}".format(i / power), sep="\r", end="", flush=True)
+            s += Rational(1, factorial(i)) * (self.ExpPowerLieBracket(other, i)).ham.doit()
 
-        return LieOperator(s, self.indep_coords, self.indep_mom)
+        return LieOperator(sympy.N(s).expand(), self.indep_coords, self.indep_mom)
 
     # Successively apply Poisson bracket to input function to the input cutoff
     def ExpPowerLieBracket(self, other, power):
