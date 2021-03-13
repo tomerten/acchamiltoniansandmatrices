@@ -22,7 +22,7 @@ def nestList(f, x, c, **kwargs):
     for i in range(c):
         yield x
         x = f(x, **kwargs)
-    yield np.array(x)
+    yield x  # np.array(x)
 
 
 def LinMap(X, **kwargs):
