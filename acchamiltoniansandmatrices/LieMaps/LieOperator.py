@@ -158,10 +158,21 @@ class LieOperator(Expr):
     # Calculate the exponential map of the Lie operator to the input cutoff
     def LieMap(self, other, power):
         s = S(0)
+        # if not isinstance(other, LieOperator):
+        #     _op2 = LieOperator(other, self.indep_coords, self.indep_mom)
+        # else:
+        #     _op2 = other
 
-        for i in range(power + 1):
+        # s += _op2.ham
+
+        # temp = self.ExpPowerLieBracket(other, 1)
+        # s += temp.ham.doit().expand()
+
+        for i in range(0, power + 1):
             # print("{:5.2f}".format(i / power), sep="\r", end="", flush=True)
+            # temp = temp * LieOperator(other, self.indep_coords, self.indep_mom)
             s += Rational(1, factorial(i)) * (self.ExpPowerLieBracket(other, i)).ham.doit()
+            # s += Rational(1, factorial(i)) * (temp.ham.doit().expand())
 
         return LieOperator(sympy.N(s).expand(), self.indep_coords, self.indep_mom)
 

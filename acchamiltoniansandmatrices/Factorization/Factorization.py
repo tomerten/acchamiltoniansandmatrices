@@ -106,7 +106,7 @@ def taylor_to_lie(taylor, degree, coords):
     """
     log.setup()
     log.info("Transforming Taylor to Lie.")
-
+    log.info("coords are {}".format(coords))
     # decide if linear or nonlinear
     if degree == 2:
         lie = deg2_lie(taylor, coords)  # linear case
@@ -208,7 +208,7 @@ def dragt_finn_factorization(taylor, coords):
         # Lie maps product as array
         LieProduct.append(T)
         taylor = transform_taylor(
-            T, taylor, i, degree, coords
+            T, taylor, i, coords, degree
         )  # adjust higher order taylor coeff for next coeff extraction
 
         if i > 5:
@@ -236,14 +236,17 @@ def transform_taylor(ham, taylor, hom_order, coords, degree=3):  # adjust higher
     """
     log.setup()
     log.info("Cleaning up Taylor vector map.")
+    # log.info("coords are {}".format(coords))
 
     sym_x1, sym_y1, sym_z1, sym_px1, sym_py1, sym_pz1 = symbols(
         "x_1 y_1 z_1 p_{x1} p_{y1} delta_1"
     )
+
     variables = tuple(coords)
     new_variables = (sym_x1, sym_px1, sym_y1, sym_py1, sym_z1, sym_pz1)
 
     if hom_order == 2:  # linear case needs more checking
+        print(ham)
         R_inv = np.linalg.inv(ham)
         vec = [new_variables[i] for i in range(len(R_inv))]
 
