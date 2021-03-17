@@ -166,9 +166,11 @@ def degN_lie(taylor, degree, coords):  # higher order Lie maps
                 if (f.coeff_monomial(mon * variables[derivatives[var]])) == 0:
                     # normalize derivative power
                     power = monomial[derivatives[var]]
-                    f = f + (p.coeffs()[index] / (power + 1)) * mon * variables[
+                    f = f + (p.coeffs()[index] / (power + 1.0)) * mon * variables[
                         derivatives[var]
                     ] * (-1) ** (var)
+
+                    print(f)
 
     return f.subs(_epstemp, 0)
 

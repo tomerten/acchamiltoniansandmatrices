@@ -1,4 +1,4 @@
-from sympy import Matrix, Rational, cos, cosh, pi, sin, sinh, sqrt, tan
+from sympy import I, Matrix, Rational, cos, cosh, pi, sin, sinh, sqrt, tan
 
 
 def half():
@@ -140,7 +140,7 @@ def RsymbQuad4D(beta0, gamma0, L, k1):
 
 def RsymbQuad6DChroma(beta0, gamma0, L, k1, delta):
     D = sqrt(1 + 2 * delta / beta0 + delta ** 2)
-    o = sqrt(k1 / D)
+    o = sqrt(k1 / D + 0 * I)
     ol = o * L
     od = o * D
     c = cos(ol)

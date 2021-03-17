@@ -1,3 +1,4 @@
+import numpy as np
 from sympy import Rational, oo, simplify, symbols
 from sympy.core.numbers import NegativeOne, One, Zero
 
@@ -114,3 +115,59 @@ def RingHam(
     H = LieOperator(temp_H, [x, y, z], [px, py, delta])
 
     return H
+
+
+def drift_exact(r: np.array, l: float) -> np.array:
+    """
+    Function to track 6D through drift using sqrt.
+
+    Arguments:
+    ----------
+    r : input coords n x 6 matrix
+    l : length of the drift
+
+    """
+    _x = r[:, 0]
+    _px = r[:, 1]
+    _y = r[:, 2]
+    _py = r[:, 3]
+    _z = r[:, 4]
+    _pz = r[:, 5]
+
+    d = np.sqrt((_pz + 1) ** 2 - _px ** 2 - _py ** 2)
+
+    xn = _x + l * _px / d
+    pxn = _px
+    yn = _y + l * _py / d
+    pyn = _py
+    zn = _z + l * (1 - 1 / d) - _pz * l / d
+    pzn = _pz
+
+    return np.array([xn, pxn, yn, pyn, zn, pzn]).transpose()
+
+
+def drift_lin(r: np.array, l: float) -> np.array:
+    """
+    Function to track with linear approximation for drift.
+
+    Arguments:
+    ----------
+    r : input coords n x 6 matrix
+    l : length of the drift
+
+    """
+    _x = r[:, 0]
+    _px = r[:, 1]
+    _y = r[:, 2]
+    _py = r[:, 3]
+    _z = r[:, 4]
+    _pz = r[:, 5]
+
+    xn = _x + l * _px
+    pxn = _px
+    yn = _y + l * _py
+    pyn = _py
+    zn = _z
+    pzn = _pz
+
+    return np.array([xn, pxn, yn, pyn, zn, pzn]).transpose()
