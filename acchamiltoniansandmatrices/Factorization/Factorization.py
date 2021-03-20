@@ -106,6 +106,7 @@ def taylor_to_lie(taylor, degree, coords):
     """
     log.setup()
     log.info("Transforming Taylor to Lie.")
+    log.info(taylor)
     log.info("coords are {}".format(coords))
     # decide if linear or nonlinear
     if degree == 2:
@@ -158,7 +159,10 @@ def degN_lie(taylor, degree, coords):  # higher order Lie maps
         for index, monomial in enumerate(p.monoms()):
             # check hom level -> derivative is order - 1
             if order[index] == (degree - 1):
-                # print(variables,monomial)
+                print(p)
+                print()
+                print(variables, monomial)
+                print()
                 # reconstruct monomial
                 mon = prod(a ** b for a, b in zip(variables, monomial))
 
@@ -166,6 +170,8 @@ def degN_lie(taylor, degree, coords):  # higher order Lie maps
                 if (f.coeff_monomial(mon * variables[derivatives[var]])) == 0:
                     # normalize derivative power
                     power = monomial[derivatives[var]]
+                    print(mon * variables[derivatives[var]])
+                    print((p.coeffs()[index]))
                     f = f + (p.coeffs()[index] / (power + 1.0)) * mon * variables[
                         derivatives[var]
                     ] * (-1) ** (var)
@@ -204,6 +210,8 @@ def dragt_finn_factorization(taylor, coords):
             degree = comp_degree
 
     for i in range(2, degree + 2):
+        log.info("Taylor in")
+        log.info(taylor)
         # coeff match to get hom poly in Lie product maps
         T = taylor_to_lie(taylor, i, coords)
 
@@ -212,6 +220,8 @@ def dragt_finn_factorization(taylor, coords):
         taylor = transform_taylor(
             T, taylor, i, coords, degree
         )  # adjust higher order taylor coeff for next coeff extraction
+        log.info("Taylor out")
+        log.info(taylor)
 
         if i > 5:
             print("Implemented only to 5th order so far.")
@@ -279,7 +289,7 @@ def transform_taylor(ham, taylor, hom_order, coords, degree=3):  # adjust higher
             old_poly - new_poly for old_poly, new_poly in zip(taylor, mod_taylor)
         ]  # exp(-:G_n:)z -> subtract from taylor poly the symplectic jet
 
-    return taylor
+    return [t.expand() for t in taylor]
 
 
 def taylorize(LieHam, degree):

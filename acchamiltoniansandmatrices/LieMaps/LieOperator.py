@@ -170,7 +170,7 @@ class LieOperator(Expr):
             s += temp.ham.doit().expand()
         # print(s)
 
-        for i in tqdm(range(2, power + 1)):
+        for i in range(2, power + 1):
             # print("{:5.2f}".format(i / power), sep="\r", end="", flush=True)
             temp = self * temp
             # s += Rational(1, factorial(i)) * (self.ExpPowerLieBracket(other, i)).ham.doit()
