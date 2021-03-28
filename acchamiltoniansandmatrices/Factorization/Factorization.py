@@ -86,7 +86,10 @@ def deg2_lie(taylor, coords):
         R.append(Matrow)
 
     # convert to numpy so linalg can invert it
-    R = np.asarray(R, dtype="float")
+    # R = np.asarray(R, dtype="float")
+    R = np.asarray(R).astype(np.float64)
+
+    log.info(R)
 
     return R
 
@@ -159,10 +162,6 @@ def degN_lie(taylor, degree, coords):  # higher order Lie maps
         for index, monomial in enumerate(p.monoms()):
             # check hom level -> derivative is order - 1
             if order[index] == (degree - 1):
-                print(p)
-                print()
-                print(variables, monomial)
-                print()
                 # reconstruct monomial
                 mon = prod(a ** b for a, b in zip(variables, monomial))
 
@@ -170,13 +169,9 @@ def degN_lie(taylor, degree, coords):  # higher order Lie maps
                 if (f.coeff_monomial(mon * variables[derivatives[var]])) == 0:
                     # normalize derivative power
                     power = monomial[derivatives[var]]
-                    print(mon * variables[derivatives[var]])
-                    print((p.coeffs()[index]))
                     f = f + (p.coeffs()[index] / (power + 1.0)) * mon * variables[
                         derivatives[var]
                     ] * (-1) ** (var)
-
-                    print(f)
 
     return f.subs(_epstemp, 0)
 
@@ -258,18 +253,18 @@ def transform_taylor(ham, taylor, hom_order, coords, degree=3):  # adjust higher
     new_variables = (sym_x1, sym_px1, sym_y1, sym_py1, sym_z1, sym_pz1)
 
     if hom_order == 2:  # linear case needs more checking
-        print(ham)
         R_inv = np.linalg.inv(ham)
-        vec = [new_variables[i] for i in range(len(R_inv))]
+        # vec = [new_variables[i] for i in range(len(R_inv))]
 
-        new_coords = np.dot(R_inv, vec)  # exp(-:G_2:) z_1 = z_0 + higher orders
-        int_taylor = [
-            polynomial.subs([(i, j) for i, j in zip(variables, new_coords)])
-            for polynomial in taylor
-        ]
-        taylor = [
-            polynomial.subs([(i, j) for i, j in zip(vec, variables)]) for polynomial in int_taylor
-        ]
+        # new_coords = np.dot(R_inv, vec)  # exp(-:G_2:) z_1 = z_0 + higher orders
+        # int_taylor = [
+        #    polynomial.subs([(i, j) for i, j in zip(variables, new_coords)])
+        #    for polynomial in taylor
+        # ]
+        # taylor = [
+        #    polynomial.subs([(i, j) for i, j in zip(vec, variables)]) for polynomial in int_taylor
+        # ]
+        taylor = np.dot(R_inv, taylor)
     else:  # higher order - note the order of the variables !!!!
         log.warning(
             "coords used - {}, phases used - {}".format(
